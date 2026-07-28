@@ -1,18 +1,52 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image' // Importamos el componente Image de Next.js
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-black text-white font-sans antialiased selection:bg-white selection:text-black">
       
-      {/* 1. HERO PRINCIPAL DE PORTADA */}
-      <section className="relative min-h-[85vh] flex flex-col items-center justify-center text-center px-6 pt-24 pb-16 overflow-hidden">
+      {/* HEADER CON LOGO */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-zinc-900 px-6 py-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3">
+          {/* Logo principal en el encabezado */}
+          <Image 
+            src="/logo-yfilming.png" // Ruta a tu logo en /public
+            alt="YFILMING Logo"
+            width={40} // Ajusta el tamaño según prefieras
+            height={40}
+            className="group-hover:scale-105 transition-transform"
+          />
+          <span className="text-xl font-bold tracking-tight text-white">
+            YFILMING
+          </span>
+        </Link>
+        <nav className="flex items-center gap-6 text-sm font-medium text-zinc-400">
+          <Link href="#proyectos" className="hover:text-white transition">Proyectos</Link>
+          <Link href="#sobre-mi" className="hover:text-white transition">Sobre mi</Link>
+          <Link href="/rodajes" className="hover:text-white transition flex items-center gap-2">
+            Rodajes 🎬
+          </Link>
+        </nav>
+      </header>
+
+      {/* 1. HERO PRINCIPAL DE PORTADA CON LOGO INtegrado */}
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 overflow-hidden">
         {/* Glow cinematográfico de fondo */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-zinc-800/20 blur-[140px] rounded-full pointer-events-none" />
 
-        <span className="text-xs font-extrabold uppercase tracking-[0.3em] text-zinc-400 mb-4">
-          YFILMING · CINEMATOGRAPHY & PRODUCTION
+        {/* Logo sutil sobre el título */}
+        <Image 
+          src="/logo-yfilming.png"
+          alt="YFILMING UFO"
+          width={80} // Un poco más grande para el hero
+          height={80}
+          className="mb-8 opacity-70"
+        />
+
+        <span className="text-xs font-extrabold uppercase tracking-[0.3em] text-zinc-400 mb-4 block">
+          CINEMATOGRAPHY & PRODUCTION
         </span>
         
         <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-6 max-w-5xl leading-[1.02]">
@@ -22,8 +56,8 @@ export default function Home() {
           </span>
         </h1>
 
-        <p className="text-zinc-400 text-lg sm:text-xl max-w-2xl mb-10 font-normal leading-relaxed">
-          Dirección, producción y narrativa visual. Proyectos cinematográficos construidos con precisión técnica y mirada de autor.
+        <p className="text-zinc-400 text-lg sm:text-xl max-w-2xl mb-12 font-normal leading-relaxed">
+          Dirección, producción y narrativa visual. Proyectos cinematográficos construidos con precisión técnica y mirada de autor, desde Murcia al resto del universo.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -37,7 +71,7 @@ export default function Home() {
             href="/rodajes"
             className="w-full sm:w-auto border border-zinc-800 hover:border-zinc-600 bg-zinc-950 text-zinc-300 font-semibold px-8 py-3.5 rounded-full transition-all text-sm flex items-center justify-center gap-2"
           >
-            Acceso a Rodajes 🎬
+            Acceso a Rodajes 🛸
           </Link>
         </div>
       </section>
@@ -174,9 +208,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="py-12 border-t border-zinc-900 text-center text-xs text-zinc-600">
-        <p>© YFILMING. Todos los derechos reservados.</p>
+      {/* FOOTER CON LOGO */}
+      <footer className="py-16 border-t border-zinc-900 bg-zinc-950 text-center px-6">
+        <div className="flex flex-col items-center gap-4">
+          <Image 
+            src="/logo-yfilming.png"
+            alt="YFILMING UFO Footer"
+            width={30}
+            height={30}
+            className="opacity-50"
+          />
+          <p className="text-xs text-zinc-600">
+            © YFILMING. Todos los derechos reservados. <br />
+            Historias que desafían la gravedad.
+          </p>
+        </div>
       </footer>
     </div>
   )
