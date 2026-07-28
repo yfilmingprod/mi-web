@@ -92,30 +92,44 @@ export default function Home() {
         </div>
 
         {/* TARJETA GIGANTE 1: PHIL WEASLEY (WESTERN TABERNAS) */}
-        <div className="group relative bg-gradient-to-b from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-500 transition-all duration-500 min-h-[520px] flex flex-col justify-between p-8 sm:p-14">
-          <div className="max-w-2xl z-10">
+        <Link 
+          href="/proyectos/phil-weasley"
+          className="group relative bg-gradient-to-b from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-500 transition-all duration-500 min-h-[520px] flex flex-col justify-between p-8 sm:p-14 block"
+        >
+          {/* Foto de portada de fondo con degradado elegante */}
+          <div className="absolute inset-0 z-0">
+            <Image 
+              src="/phil-weasley/portada.jpg" 
+              alt="Phil Weasley Western" 
+              fill 
+              className="object-cover opacity-30 group-hover:scale-105 group-hover:opacity-45 transition-all duration-700" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+          </div>
+
+          <div className="max-w-2xl z-10 relative">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-bold uppercase tracking-widest bg-white/10 text-white px-3 py-1 rounded-full backdrop-blur-md">
+              <span className="text-xs font-bold uppercase tracking-widest bg-white/10 text-white px-3 py-1 rounded-full backdrop-blur-md border border-white/20">
                 Western · Tabernas
               </span>
-              <span className="text-xs font-semibold text-zinc-500">Posproducción</span>
+              <span className="text-xs font-semibold text-zinc-400">Posproducción</span>
             </div>
             <h3 className="text-4xl sm:text-6xl font-black text-white tracking-tight mb-4 group-hover:translate-x-1 transition-transform">
               Phil Weasley
             </h3>
             <p className="text-zinc-300 text-base sm:text-lg leading-relaxed font-normal">
-              Rodado en los icónicos desiertos de Almería. Un tratamiento de color meticuloso en Log y flujo técnico de cámara totalmente personalizado para una estética desértica y cruda.
+              Rodado en los icónicos desiertos de Almería. Haz clic para explorar la visión de dirección, la historia y la experiencia visual con fotogramas del rodaje.
             </p>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-zinc-400">
+          <div className="mt-10 pt-6 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-zinc-400 z-10 relative">
             <div className="flex gap-6">
               <span><strong className="text-white">Localización:</strong> Tabernas (Almería)</span>
               <span className="hidden sm:inline"><strong className="text-white">Flujo Técnico:</strong> Cámara & Color Grading</span>
             </div>
-            <span className="text-white group-hover:underline">Ver detalles del proyecto →</span>
+            <span className="text-white group-hover:underline">Explorar proyecto completo →</span>
           </div>
-        </div>
+        </Link>
 
         {/* TARJETA GIGANTE 2: AMOR PROCESADO (THRILLER) */}
         <div className="group relative bg-gradient-to-b from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-500 transition-all duration-500 min-h-[520px] flex flex-col justify-between p-8 sm:p-14">
