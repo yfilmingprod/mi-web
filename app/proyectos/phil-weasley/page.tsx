@@ -75,8 +75,8 @@ export default function PhilWeasleyPage() {
             <span className="text-white font-semibold text-base">Tabernas (Almería)</span>
           </div>
           <div>
-            <span className="text-zinc-500 block text-xs uppercase font-semibold">Dirección & Fotografía</span>
-            <span className="text-white font-semibold text-base">Yoel Martínez Pérez</span>
+            <span className="text-zinc-500 block text-xs uppercase font-semibold">Dirección</span>
+            <span className="text-white font-semibold text-base">Barto Muñoz</span>
           </div>
         </div>
       </section>
