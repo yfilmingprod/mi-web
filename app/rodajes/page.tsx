@@ -56,16 +56,16 @@ export default async function RodajesPage() {
   // 3. Email del usuario conectado
   const emailUsuario = user.emailAddresses[0].emailAddress
 
-  // 4. CONSULTA A SUPABASE (En tiempo real)
-  const { data: todosLosRodajes } = await supabase
+  /// 4. CONSULTA A SUPABASE
+  const { data: todosLosRodajes, error } = await supabase
     .from('rodajes')
     .select('*')
-    .order('created_at', { ascending: false })
 
-  // 5. Filtramos los rodajes comprobando si el email del usuario está en la lista de accesos (jsonb)
+  // 5. Comprobación ultra-flexible de email
   const rodajesPermitidos = (todosLosRodajes || []).filter((rodaje) => {
     if (!rodaje.accesos) return false
-    return Array.isArray(rodaje.accesos) && rodaje.accesos.includes(emailUsuario)
+    const accesosTexto = JSON.stringify(rodaje.accesos).toLowerCase()
+    return accesosTexto.includes(emailUsuario.toLowerCase())
   })
 
   return (
