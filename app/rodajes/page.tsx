@@ -2,17 +2,16 @@ import { currentUser } from '@clerk/nextjs/server'
 import { SignInButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import Image from 'next/image'
+import { supabase } from '@/lib/supabase'
 
 export default async function RodajesPage() {
   // 1. Obtenemos el usuario actual desde Clerk
   const user = await currentUser()
 
-  // 2. SI NO HA INICIADO SESIÓN: Mostramos pantalla elegante de acceso en lugar de dar error
+  // 2. SI NO HA INICIADO SESIÓN: Pantalla de acceso restringido
   if (!user) {
     return (
       <div className="min-h-screen bg-black text-white font-sans antialiased flex flex-col items-center justify-center p-6 text-center">
-        
-        {/* Glow de fondo */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-yellow-500/10 blur-[120px] rounded-full pointer-events-none" />
 
         <div className="relative z-10 max-w-md space-y-6">
@@ -37,7 +36,6 @@ export default async function RodajesPage() {
           </p>
 
           <div className="pt-4 flex flex-col gap-3">
-            {/* Botón de Clerk para abrir el login emergente */}
             <SignInButton mode="modal">
               <button className="w-full bg-white text-black font-semibold py-3.5 px-8 rounded-full hover:bg-zinc-200 transition text-sm shadow-xl">
                 Iniciar Sesión / Registrarse
@@ -56,44 +54,23 @@ export default async function RodajesPage() {
     )
   }
 
-  // 3. SI SÍ ESTÁ LOGUEADO: Sacamos su email principal
+  // 3. Email del usuario conectado
   const emailUsuario = user.emailAddresses[0].emailAddress
 
-  // 4. BASE DE DATOS DE ACCESOS
-  const todosLosRodajes = [
-    {
-      id: 'phil-weasley',
-      titulo: 'Phil Weasley',
-      rol: 'Director & Cámara',
-      estado: 'Posproducción',
-      accesos: ['yoelmartinezperez@gmail.com', 'info.ap7estudios@gmail.com'], 
-      enlace: '/rodajes/phil-weasley'
-    },
-    {
-      id: 'fototaxia',
-      titulo: 'Fototaxia & Parpadear',
-      rol: 'Cámara & Producción',
-      estado: 'Finalizado',
-      accesos: ['yoelmartinezperez@gmail.com', 'info.ap7estudios@gmail.com'],
-      enlace: '#'
-    },
-    {
-      id: 'frontera',
-      titulo: 'Frontera',
-      rol: 'Dir. Producción',
-      estado: 'Preproducción',
-      accesos: ['yoelmartinezperez@gmail.com', 'email-de-barto@gmail.com'],
-      enlace: '#'
-    }
-  ]
+  // 4. CONSULTA A SUPABASE (En tiempo real)
+  const { data: todosLosRodajes } = await supabase
+    .from('rodajes')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-  // 5. Filtramos los rodajes donde coincida el email del usuario conectado
-  const rodajesPermitidos = todosLosRodajes.filter(rodaje => 
-    rodaje.accesos.includes(emailUsuario)
-  )
+  // 5. Filtramos los rodajes comprobando si el email del usuario está en la lista de accesos (jsonb)
+  const rodajesPermitidos = (todosLosRodajes || []).filter((rodaje) => {
+    if (!rodaje.accesos) return false
+    return Array.isArray(rodaje.accesos) && rodaje.accesos.includes(emailUsuario)
+  })
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans antialiased pt-28 px-6">
+    <div className="min-h-screen bg-black text-white font-sans antialiased pt-28 px-6 pb-20">
       
       {/* Botón Volver */}
       <div className="max-w-5xl mx-auto mb-12">
@@ -126,7 +103,7 @@ export default async function RodajesPage() {
             {rodajesPermitidos.map((rodaje) => (
               <Link 
                 key={rodaje.id}
-                href={rodaje.enlace}
+                href={rodaje.enlace || '#'}
                 className="group bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-zinc-500 transition-all block"
               >
                 <div className="flex justify-between items-start mb-6">
