@@ -56,10 +56,29 @@ export default async function RodajesPage() {
   // 3. Email del usuario conectado
   const emailUsuario = user.emailAddresses[0].emailAddress
 
-  /// 4. CONSULTA A SUPABASE
-  const { data: todosLosRodajes, error } = await supabase
+  // 4. CONSULTA DIRECTA Y DIAGNÓSTICO
+  const { data: todosLosRodajes, error: errorSupabase } = await supabase
     .from('rodajes')
     .select('*')
+
+  return (
+    <div className="min-h-screen bg-black text-white p-10 font-mono text-xs">
+      <h1 className="text-xl text-yellow-500 mb-4 font-bold">PANEL DE DIAGNÓSTICO SUPABASE</h1>
+      
+      <p className="mb-2"><strong>Email detectado por Clerk:</strong> {emailUsuario}</p>
+      <p className="mb-4"><strong>Error de Supabase (si hay):</strong> {errorSupabase ? JSON.stringify(errorSupabase) : 'Ninguno (OK)'}</p>
+      
+      <h2 className="text-lg text-white mb-2 font-bold">Filas devueltas por la tabla "rodajes": {todosLosRodajes?.length || 0}</h2>
+      
+      <pre className="bg-zinc-900 p-4 rounded border border-zinc-800 text-green-400 overflow-x-auto">
+        {JSON.stringify(todosLosRodajes, null, 2)}
+      </pre>
+
+      <div className="mt-8">
+        <Link href="/" className="text-zinc-500 hover:text-white">← Volver</Link>
+      </div>
+    </div>
+  )
 
   // 5. Comprobación ultra-flexible de email
   const rodajesPermitidos = (todosLosRodajes || []).filter((rodaje) => {
