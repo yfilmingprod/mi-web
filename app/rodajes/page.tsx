@@ -5,133 +5,53 @@ import Image from 'next/image'
 import { supabase } from '../../lib/supabase'
 
 export default async function RodajesPage() {
-  // 1. Obtenemos el usuario actual desde Clerk
   const user = await currentUser()
 
-  // 2. SI NO HA INICIADO SESIÓN: Pantalla de acceso restringido
   if (!user) {
     return (
-      <div className="min-h-screen bg-black text-white font-sans antialiased flex flex-col items-center justify-center p-6 text-center">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-yellow-500/10 blur-[120px] rounded-full pointer-events-none" />
-
-        <div className="relative z-10 max-w-md space-y-6">
-          <Image 
-            src="/logo-yfilming.png"
-            alt="YFILMING Logo"
-            width={70}
-            height={70}
-            className="mx-auto opacity-80"
-          />
-
-          <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-500 block">
-            ÁREA PRIVADA DE PRODUCCIÓN
-          </span>
-
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-            Acceso Restringido
-          </h1>
-
-          <p className="text-zinc-400 text-sm leading-relaxed">
-            Esta sección contiene órdenes de rodaje, planes de producción y guiones privados. Inicia sesión para verificar los proyectos asignados a tu perfil.
-          </p>
-
-          <div className="pt-4 flex flex-col gap-3">
-            <SignInButton mode="modal">
-              <button className="w-full bg-white text-black font-semibold py-3.5 px-8 rounded-full hover:bg-zinc-200 transition text-sm shadow-xl">
-                Iniciar Sesión / Registrarse
-              </button>
-            </SignInButton>
-
-            <Link 
-              href="/" 
-              className="text-xs text-zinc-500 hover:text-zinc-300 py-2 transition"
-            >
-              ← Volver a la portada pública
-            </Link>
-          </div>
-        </div>
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-2xl font-bold">Acceso Restringido</h1>
+        <SignInButton mode="modal">
+          <button className="mt-4 bg-white text-black px-6 py-2 rounded-full font-bold">Iniciar Sesión</button>
+        </SignInButton>
       </div>
     )
   }
 
-  // 3. Email del usuario conectado
   const emailUsuario = user.emailAddresses[0].emailAddress
 
-  // 4. CONSULTA A SUPABASE (En tiempo real)
-  const { data: todosLosRodajes } = await supabase
+  // 1. Realizamos la consulta capturando el error explícito
+  const { data: todosLosRodajes, error: errorSupabase } = await supabase
     .from('rodajes')
     .select('*')
 
-  // 5. MOSTRAR TODOS LOS RODAJES TEMPORALMENTE
-  const rodajesPermitidos = todosLosRodajes || []
+  // 2. Comprobamos las variables en tiempo de ejecución del servidor
+  const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ? "CONFIGURADA ✅" : "FALTA ❌"
+  const envKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "CONFIGURADA ✅" : "FALTA ❌"
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans antialiased pt-28 px-6 pb-20">
-      
-      {/* Botón Volver */}
-      <div className="max-w-5xl mx-auto mb-12">
-        <Link 
-          href="/" 
-          className="text-zinc-500 hover:text-white text-sm font-semibold tracking-wider uppercase transition flex items-center gap-2"
-        >
-          ← Volver al inicio
-        </Link>
+    <div className="min-h-screen bg-black text-white p-8 font-mono text-sm pt-28 max-w-4xl mx-auto space-y-6">
+      <div className="border border-yellow-500/30 bg-yellow-500/10 p-4 rounded-xl">
+        <h1 className="text-xl font-bold text-yellow-500 mb-2">⚡ RENDER DE DIAGNÓSTICO DIRECTO</h1>
+        <p><strong>Usuario conectado:</strong> {emailUsuario}</p>
+        <p><strong>Variable URL:</strong> {envUrl}</p>
+        <p><strong>Variable ANON KEY:</strong> {envKey}</p>
       </div>
 
-      <div className="max-w-5xl mx-auto space-y-12">
-        {/* Cabecera del Panel Privado */}
-        <header className="border-b border-zinc-900 pb-10">
-          <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-500 mb-2 block">
-            ÁREA PRIVADA DE PRODUCCIÓN
-          </span>
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white mb-4">
-            Hola, {user.firstName || 'Equipo'}.
-          </h1>
-          <p className="text-zinc-400 text-lg">
-            Estás conectado con <strong className="text-zinc-200">{emailUsuario}</strong>. 
-            Aquí tienes acceso a los rodajes asignados a tu perfil.
-          </p>
-        </header>
-
-        {/* Grid de Proyectos Permitidos */}
-        {rodajesPermitidos.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {rodajesPermitidos.map((rodaje) => (
-              <Link 
-                key={rodaje.id}
-                href={rodaje.enlace || '#'}
-                className="group bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-zinc-500 transition-all block"
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <span className="text-xs font-bold uppercase tracking-widest bg-zinc-900 text-zinc-400 px-3 py-1 rounded-full border border-zinc-800">
-                    {rodaje.estado}
-                  </span>
-                  <span className="text-xl">🎬</span>
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform">
-                  {rodaje.titulo}
-                </h2>
-                <p className="text-zinc-500 text-sm mb-8">Rol asignado: {rodaje.rol}</p>
-                
-                <div className="pt-4 border-t border-zinc-900 flex justify-between items-center text-xs text-zinc-400">
-                  <span>Acceso autorizado</span>
-                  <span className="text-white font-semibold group-hover:underline">Entrar al workspace →</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          /* Mensaje si el usuario no tiene proyectos asignados */
-          <div className="bg-zinc-950 border border-zinc-900 rounded-3xl p-12 text-center">
-            <span className="text-4xl block mb-4">🔒</span>
-            <h3 className="text-xl font-bold text-white mb-2">Sin rodajes asignados</h3>
-            <p className="text-zinc-500 text-sm">
-              Tu cuenta ({emailUsuario}) no tiene acceso a ningún proyecto actualmente. Contacta con dirección de producción si crees que es un error.
-            </p>
-          </div>
-        )}
-
+      <div className="border border-zinc-800 bg-zinc-950 p-4 rounded-xl space-y-2">
+        <h2 className="text-lg font-bold text-white">Respuesta de Supabase:</h2>
+        <p><strong>Error de Supabase:</strong> {errorSupabase ? JSON.stringify(errorSupabase, null, 2) : "Ninguno (null)"}</p>
+        <p><strong>Cantidad de filas devueltas:</strong> {todosLosRodajes ? todosLosRodajes.length : "null"}</p>
       </div>
+
+      <div className="border border-zinc-800 bg-zinc-950 p-4 rounded-xl">
+        <h2 className="text-lg font-bold text-white mb-2">Datos RAW de la tabla "rodajes":</h2>
+        <pre className="text-green-400 bg-black p-4 rounded border border-zinc-900 overflow-x-auto">
+          {JSON.stringify(todosLosRodajes, null, 2)}
+        </pre>
+      </div>
+
+      <Link href="/" className="inline-block text-zinc-500 hover:text-white mt-4">← Volver al inicio</Link>
     </div>
   )
 }
