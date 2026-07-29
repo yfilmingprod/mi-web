@@ -1,27 +1,71 @@
 import { currentUser } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
+import { SignInButton } from '@clerk/nextjs'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default async function RodajesPage() {
   // 1. Obtenemos el usuario actual desde Clerk
   const user = await currentUser()
 
-  // Si no hay usuario logueado, lo mandamos a iniciar sesión
+  // 2. SI NO HA INICIADO SESIÓN: Mostramos pantalla elegante de acceso en lugar de dar error
   if (!user) {
-    redirect('/sign-in')
+    return (
+      <div className="min-h-screen bg-black text-white font-sans antialiased flex flex-col items-center justify-center p-6 text-center">
+        
+        {/* Glow de fondo */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-yellow-500/10 blur-[120px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10 max-w-md space-y-6">
+          <Image 
+            src="/logo-yfilming.png"
+            alt="YFILMING Logo"
+            width={70}
+            height={70}
+            className="mx-auto opacity-80"
+          />
+
+          <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-500 block">
+            ÁREA PRIVADA DE PRODUCCIÓN
+          </span>
+
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+            Acceso Restringido
+          </h1>
+
+          <p className="text-zinc-400 text-sm leading-relaxed">
+            Esta sección contiene órdenes de rodaje, planes de producción y guiones privados. Inicia sesión para verificar los proyectos asignados a tu perfil.
+          </p>
+
+          <div className="pt-4 flex flex-col gap-3">
+            {/* Botón de Clerk para abrir el login emergente */}
+            <SignInButton mode="modal">
+              <button className="w-full bg-white text-black font-semibold py-3.5 px-8 rounded-full hover:bg-zinc-200 transition text-sm shadow-xl">
+                Iniciar Sesión / Registrarse
+              </button>
+            </SignInButton>
+
+            <Link 
+              href="/" 
+              className="text-xs text-zinc-500 hover:text-zinc-300 py-2 transition"
+            >
+              ← Volver a la portada pública
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  // Sacamos su email principal
+  // 3. SI SÍ ESTÁ LOGUEADO: Sacamos su email principal
   const emailUsuario = user.emailAddresses[0].emailAddress
 
-  // 2. NUESTRA BASE DE DATOS DE ACCESOS (Aquí asignas los permisos)
+  // 4. BASE DE DATOS DE ACCESOS
   const todosLosRodajes = [
     {
       id: 'phil-weasley',
       titulo: 'Phil Weasley',
       rol: 'Director & Cámara',
       estado: 'Posproducción',
-      // Cambia estos emails por los reales. Tú debes estar en todos para verlos.
       accesos: ['yoelmartinezperez@gmail.com', 'info.ap7estudios@gmail.com'], 
       enlace: '/proyectos/phil-weasley'
     },
@@ -30,7 +74,6 @@ export default async function RodajesPage() {
       titulo: 'Fototaxia & Parpadear',
       rol: 'Cámara & Producción',
       estado: 'Finalizado',
-      // Ejemplo: Aquí solo tienen acceso tú y Juan Castro
       accesos: ['yoelmartinezperez@gmail.com', 'info.ap7estudios@gmail.com'],
       enlace: '#'
     },
@@ -39,13 +82,12 @@ export default async function RodajesPage() {
       titulo: 'Frontera',
       rol: 'Dir. Producción',
       estado: 'Preproducción',
-      // Ejemplo: Aquí solo tienen acceso tú y Barto
       accesos: ['yoelmartinezperez@gmail.com', 'email-de-barto@gmail.com'],
       enlace: '#'
     }
   ]
 
-  // 3. LÓGICA MAGICA: Filtramos solo los rodajes donde el email del usuario coincida
+  // 5. Filtramos los rodajes donde coincida el email del usuario conectado
   const rodajesPermitidos = todosLosRodajes.filter(rodaje => 
     rodaje.accesos.includes(emailUsuario)
   )
@@ -111,7 +153,7 @@ export default async function RodajesPage() {
             <span className="text-4xl block mb-4">🔒</span>
             <h3 className="text-xl font-bold text-white mb-2">Sin rodajes asignados</h3>
             <p className="text-zinc-500 text-sm">
-              Tu cuenta no tiene acceso a ningún proyecto actualmente. Contacta con dirección de producción si crees que es un error.
+              Tu cuenta ({emailUsuario}) no tiene acceso a ningún proyecto actualmente. Contacta con dirección de producción si crees que es un error.
             </p>
           </div>
         )}
