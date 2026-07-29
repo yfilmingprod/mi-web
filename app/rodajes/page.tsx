@@ -2,8 +2,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { SignInButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import Image from 'next/image'
-import { supabase } from '@/lib/supabase'
-
+import { supabase } from '../../lib/supabase'
 export default async function RodajesPage() {
   // 1. Obtenemos el usuario actual desde Clerk
   const user = await currentUser()
