@@ -62,12 +62,8 @@ export default async function RodajesPage() {
     .from('rodajes')
     .select('*')
 
-  // 5. Comprobación ultra-flexible de email (funciona con JSON, array o texto)
-  const rodajesPermitidos = (todosLosRodajes || []).filter((rodaje) => {
-    if (!rodaje.accesos) return false
-    const accesosTexto = JSON.stringify(rodaje.accesos).toLowerCase()
-    return accesosTexto.includes(emailUsuario.toLowerCase())
-  })
+  // 5. MOSTRAR TODOS LOS RODAJES TEMPORALMENTE
+  const rodajesPermitidos = todosLosRodajes || []
 
   return (
     <div className="min-h-screen bg-black text-white font-sans antialiased pt-28 px-6 pb-20">
