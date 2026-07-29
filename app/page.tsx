@@ -1,34 +1,78 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image' // Importamos el componente Image de Next.js
+import Image from 'next/image'
 
 export default function Home() {
+  const [menuAbierto, setMenuAbierto] = useState(false)
+
   return (
     <div className="min-h-screen bg-black text-white font-sans antialiased selection:bg-white selection:text-black">
       
-      {/* HEADER CON LOGO */}
+      {/* HEADER ADAPTATIVO CON MENÚ MÓVIL */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-zinc-900 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          {/* Logo principal en el encabezado */}
           <Image 
-            src="/logo-yfilming.png" // Ruta a tu logo en /public
+            src="/logo-yfilming.png"
             alt="YFILMING Logo"
-            width={40} // Ajusta el tamaño según prefieras
-            height={40}
-            className="group-hover:scale-105 transition-transform"
+            width={36}
+            height={36}
+            className="hover:scale-105 transition-transform"
           />
           <span className="text-xl font-bold tracking-tight text-white">
             YFILMING
           </span>
         </Link>
-        <nav className="flex items-center gap-6 text-sm font-medium text-zinc-400">
+
+        {/* Navegación Desktop */}
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
           <Link href="#proyectos" className="hover:text-white transition">Proyectos</Link>
-          <Link href="#sobre-mi" className="hover:text-white transition">Sobre mi</Link>
+          <Link href="#sobre-mi" className="hover:text-white transition">Sobre mí</Link>
           <Link href="/rodajes" className="hover:text-white transition flex items-center gap-2">
             Rodajes 🎬
           </Link>
         </nav>
+
+        {/* Botón Menú Hamburguesa (Solo Móvil) */}
+        <button 
+          onClick={() => setMenuAbierto(!menuAbierto)}
+          className="md:hidden text-zinc-300 hover:text-white p-2 rounded-lg focus:outline-none"
+          aria-label="Toggle menu"
+        >
+          {menuAbierto ? (
+            <span className="text-2xl font-light">✕</span>
+          ) : (
+            <span className="text-2xl font-light">☰</span>
+          )}
+        </button>
+
+        {/* Desplegable Móvil */}
+        {menuAbierto && (
+          <div className="absolute top-full left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-zinc-800 p-6 flex flex-col gap-5 md:hidden text-center text-lg font-medium">
+            <Link 
+              href="#proyectos" 
+              onClick={() => setMenuAbierto(false)} 
+              className="text-zinc-300 hover:text-white py-2"
+            >
+              Proyectos
+            </Link>
+            <Link 
+              href="#sobre-mi" 
+              onClick={() => setMenuAbierto(false)} 
+              className="text-zinc-300 hover:text-white py-2"
+            >
+              Sobre mí
+            </Link>
+            <Link 
+              href="/rodajes" 
+              onClick={() => setMenuAbierto(false)} 
+              className="bg-white text-black font-semibold py-3 rounded-full flex items-center justify-center gap-2"
+            >
+              Acceso a Rodajes 🎬
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* 1. HERO PRINCIPAL DE PORTADA CON LOGO INtegrado */}
