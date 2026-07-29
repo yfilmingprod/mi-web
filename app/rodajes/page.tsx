@@ -67,7 +67,7 @@ export default async function RodajesPage() {
       rol: 'Director & Cámara',
       estado: 'Posproducción',
       accesos: ['yoelmartinezperez@gmail.com', 'info.ap7estudios@gmail.com'], 
-      enlace: '/proyectos/phil-weasley'
+      enlace: '/rodajes/phil-weasley'
     },
     {
       id: 'fototaxia',
