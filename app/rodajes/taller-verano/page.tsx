@@ -37,7 +37,6 @@ export default function TallerVeranoPage() {
   const { isLoaded, isSignedIn, user } = useUser()
   const [recursos, setRecursos] = useState<Recurso[]>([])
   const [modalAbierto, setModalAbierto] = useState(false)
-  const [cargando, setCargando] = useState(true)
 
   // Formulario para nuevo recurso
   const [form, setForm] = useState<Recurso>({
@@ -51,7 +50,6 @@ export default function TallerVeranoPage() {
 
   // Cargar todos los recursos de Supabase
   const cargarRecursos = async () => {
-    setCargando(true)
     const { data, error } = await supabase
       .from('taller_recursos')
       .select('*')
@@ -61,7 +59,6 @@ export default function TallerVeranoPage() {
     if (!error && data) {
       setRecursos(data)
     }
-    setCargando(false)
   }
 
   useEffect(() => {
@@ -235,3 +232,164 @@ export default function TallerVeranoPage() {
                           {rec.subtitulo && (
                             <p className="text-xs text-slate-400 font-medium">{rec.subtitulo}</p>
                           )}
+                          {rec.descripcion && (
+                            <p className="text-xs text-slate-500 leading-relaxed">{rec.descripcion}</p>
+                          )}
+                        </div>
+
+                        {/* VISOR DIRECTO / EMBED */}
+                        <div className="pt-2">
+                          {rec.tipo === 'pdf' || rec.tipo === 'presentacion' || rec.tipo === 'video' ? (
+                            <div className="w-full h-56 bg-black rounded-xl overflow-hidden border border-slate-800">
+                              <iframe 
+                                src={getEmbedUrl(rec.url_drive, rec.tipo)} 
+                                className="w-full h-full border-0"
+                                allow="autoplay"
+                              />
+                            </div>
+                          ) : (
+                            <a 
+                              href={rec.url_drive} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-xs text-amber-400 hover:underline font-mono"
+                            >
+                              🔗 Abrir archivo en Google Drive →
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border border-dashed border-slate-800/80 rounded-2xl text-slate-500 text-xs z-10 relative">
+                    No hay contenidos cargados para el {jornada.titulo}.
+                    {esAdmin && (
+                      <span className="block mt-1 text-slate-400">
+                        Pulsa en el botón superior para agregar documentos o enlaces de Drive.
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* MODAL PARA AÑADIR CONTENIDO */}
+        {modalAbierto && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 className="text-lg font-bold text-white">
+                  Añadir contenido a <span className="text-amber-400">Día {form.dia_numero}</span>
+                </h3>
+                <button 
+                  onClick={() => setModalAbierto(false)} 
+                  className="text-slate-400 hover:text-white text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <form onSubmit={handleSubmit} className="space-y-3 text-sm">
+                <div>
+                  <label className="block text-slate-400 text-xs mb-1">Día del Taller</label>
+                  <select 
+                    value={form.dia_numero}
+                    onChange={(e) => setForm({...form, dia_numero: Number(e.target.value)})}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-500"
+                  >
+                    <option value={1}>Día 1</option>
+                    <option value={2}>Día 2</option>
+                    <option value={3}>Día 3</option>
+                    <option value={4}>Día 4</option>
+                    <option value={5}>Día 5</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 text-xs mb-1">Tipo de Archivo</label>
+                  <select 
+                    value={form.tipo}
+                    onChange={(e) => setForm({...form, tipo: e.target.value})}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-500"
+                  >
+                    <option value="pdf">Documento PDF / Guion</option>
+                    <option value="presentacion">Presentación (Google Slides)</option>
+                    <option value="video">Vídeo (Drive / Vimeo / YouTube)</option>
+                    <option value="imagen">Imagen / Galería</option>
+                    <option value="enlace">Enlace Externo</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 text-xs mb-1">Título del Contenido</label>
+                  <input 
+                    type="text" 
+                    required 
+                    placeholder="Ej. Guion Técnico o Presentación de Iluminación"
+                    value={form.titulo}
+                    onChange={(e) => setForm({...form, titulo: e.target.value})}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 text-xs mb-1">Subtítulo / Concepto (opcional)</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ej. Bloque práctico de la tarde"
+                    value={form.subtitulo}
+                    onChange={(e) => setForm({...form, subtitulo: e.target.value})}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 text-xs mb-1">Enlace de Google Drive / Archivo</label>
+                  <input 
+                    type="url" 
+                    required 
+                    placeholder="https://drive.google.com/file/d/..."
+                    value={form.url_drive}
+                    onChange={(e) => setForm({...form, url_drive: e.target.value})}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 text-xs mb-1">Notas / Descripción (opcional)</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Detalles breves para los alumnos..."
+                    value={form.descripcion}
+                    onChange={(e) => setForm({...form, descripcion: e.target.value})}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <button 
+                    type="button" 
+                    onClick={() => setModalAbierto(false)}
+                    className="w-full bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs hover:bg-slate-700 transition cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit"
+                    className="w-full bg-amber-500 text-black font-semibold py-2.5 rounded-xl text-xs hover:bg-amber-400 transition cursor-pointer"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  )
+}
