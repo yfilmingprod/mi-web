@@ -109,15 +109,34 @@ export default function TallerVeranoPage() {
     }
   }
 
-  // Convertir URL compartida de Drive a URL incrustable
+  // Convertir URL compartida de Drive o Slides a una URL limpia incrustable (embed)
   const getEmbedUrl = (url: string, tipo: string) => {
     if (!url) return '#'
+
+    // 1. Si es una presentación de Google Slides
+    if (tipo === 'presentacion' || url.includes('/presentation/d/')) {
+      const match = url.match(/\/presentation\/d\/([a-zA-Z0-9_-]+)/)
+      if (match && match[1]) {
+        return `https://docs.google.com/presentation/d/${match[1]}/embed?start=false&loop=false&delayms=3000`
+      }
+    }
+
+    // 2. Si es un archivo de Google Drive (PDF, Vídeo, etc.)
+    if (url.includes('/file/d/')) {
+      const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
+      if (match && match[1]) {
+        return `https://drive.google.com/file/d/${match[1]}/preview`
+      }
+    }
+
+    // fallback si no coincide con los patrones anteriores
     if (tipo === 'presentacion') {
       return url.replace('/edit', '/embed').replace('/view', '/embed')
     }
     if (tipo === 'pdf' || tipo === 'video') {
       return url.replace('/view', '/preview')
     }
+
     return url
   }
 
@@ -221,7 +240,7 @@ export default function TallerVeranoPage() {
                             {esAdmin && (
                               <button 
                                 onClick={() => handleEliminar(rec.id)}
-                                className="text-xs text-red-400/70 hover:text-red-400 transition"
+                                className="text-xs text-red-400/70 hover:text-red-400 transition cursor-pointer"
                                 title="Eliminar este contenido"
                               >
                                 ✕ Borrar
@@ -286,7 +305,7 @@ export default function TallerVeranoPage() {
                 </h3>
                 <button 
                   onClick={() => setModalAbierto(false)} 
-                  className="text-slate-400 hover:text-white text-sm"
+                  className="text-slate-400 hover:text-white text-sm cursor-pointer"
                 >
                   ✕
                 </button>
