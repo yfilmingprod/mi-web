@@ -215,4 +215,23 @@ export default function TallerVeranoPage() {
                 {recursosDia.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 z-10 relative">
                     {recursosDia.map((rec) => (
-                      <div key={rec.id} className="bg-slate-950 border border-slate-800/90 rounded-2xl p-5 space-y-4 flex flex-col
+                      <div key={rec.id} className="bg-slate-950 border border-slate-800/90 rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono uppercase bg-slate-800 text-amber-400 border border-slate-700 px-2 py-0.5 rounded">
+                              {rec.tipo}
+                            </span>
+                            {esAdmin && (
+                              <button 
+                                onClick={() => handleEliminar(rec.id)}
+                                className="text-xs text-red-400/70 hover:text-red-400 transition"
+                                title="Eliminar este contenido"
+                              >
+                                ✕ Borrar
+                              </button>
+                            )}
+                          </div>
+                          <h3 className="text-lg font-bold text-white">{rec.titulo}</h3>
+                          {rec.subtitulo && (
+                            <p className="text-xs text-slate-400 font-medium">{rec.subtitulo}</p>
+                          )}
