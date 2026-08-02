@@ -11,8 +11,11 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-// Tu email para darte acceso de Administrador / Edición
-const ADMIN_EMAIL = "yoelmartinezperez@gmail.com"
+// 👥 Lista de correos con acceso de Administrador / Edición
+const ADMIN_EMAILS = [
+  "yoelmartinezperez@gmail.com",
+  "info.ap7estudios@gmail.com" // 👈 Añade aquí todos los correos de administradores que quieras
+]
 
 // Configuración visual estática de las 5 jornadas
 const JORNADAS = [
@@ -165,7 +168,9 @@ export default function TallerVeranoPage() {
     )
   }
 
-  const esAdmin = user?.primaryEmailAddress?.emailAddress === ADMIN_EMAIL
+  // Comprobar si el correo del usuario logueado está en la lista de administradores
+  const emailUsuario = user?.primaryEmailAddress?.emailAddress
+  const esAdmin = emailUsuario ? ADMIN_EMAILS.includes(emailUsuario) : false
 
   return (
     <div className="min-h-screen bg-black text-white p-6 md:p-12">
