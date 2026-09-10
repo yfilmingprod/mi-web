@@ -1,140 +1,749 @@
-import { currentUser } from '@clerk/nextjs/server'
-import { SignInButton } from '@clerk/nextjs'
-import Link from 'next/link'
-import Image from 'next/image'
-import { supabase } from '../../lib/supabase'
+import React, { useState, useMemo } from 'react';
 
-export default async function RodajesPage() {
-  // 1. Obtenemos el usuario actual desde Clerk
-  const user = await currentUser()
+interface Rodaje {
+  id: string;
+  titulo: string;
+  rol: string;
+  estado: string;
+  fecha: string;
+  detalles: string;
+}
 
-  // 2. Si no hay sesión iniciada
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-black text-white font-sans antialiased flex flex-col items-center justify-center p-6 text-center">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-yellow-500/10 blur-[120px] rounded-full pointer-events-none" />
+interface InvoiceItem {
+  id: string;
+  title: string;
+  description: string;
+  qty: number;
+  price: number;
+}
 
-        <div className="relative z-10 max-w-md space-y-6">
-          <Image 
-            src="/logo-yfilming.png"
-            alt="YFILMING Logo"
-            width={70}
-            height={70}
-            className="mx-auto opacity-80"
-          />
-
-          <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-500 block">
-            ÁREA PRIVADA DE PRODUCCIÓN
-          </span>
-
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-            Acceso Restringido
-          </h1>
-
-          <p className="text-zinc-400 text-sm leading-relaxed">
-            Esta sección contiene órdenes de rodaje, planes de producción y guiones privados. Inicia sesión para verificar los proyectos asignados a tu perfil.
-          </p>
-
-          <div className="pt-4 flex flex-col gap-3">
-            <SignInButton mode="modal">
-              <button className="w-full bg-white text-black font-semibold py-3.5 px-8 rounded-full hover:bg-zinc-200 transition text-sm shadow-xl">
-                Iniciar Sesión / Registrarse
-              </button>
-            </SignInButton>
-
-            <Link 
-              href="/" 
-              className="text-xs text-zinc-500 hover:text-zinc-300 py-2 transition"
-            >
-              ← Volver a la portada pública
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+const PROYECTOS_INICIALES: Rodaje[] = [
+  {
+    id: '1',
+    titulo: 'Amor Procesado',
+    rol: 'Dirección de Fotografía / Operador',
+    estado: 'EN RODAJE',
+    fecha: 'Septiembre 2026',
+    detalles: 'Plan de rodaje de exteriores y secuencias nocturnas.'
+  },
+  {
+    id: '2',
+    titulo: 'Phil Weasley',
+    rol: 'Cámara & Edición',
+    estado: 'POSTPRODUCCIÓN',
+    fecha: 'Agosto - Septiembre 2026',
+    detalles: 'Etalonaje, diseño sonoro y montaje final.'
+  },
+  {
+    id: '3',
+    titulo: 'Miel',
+    rol: 'Director / Productor Ejecutivo',
+    estado: 'PREPRODUCCIÓN',
+    fecha: 'Octubre 2026',
+    detalles: 'Desglose de guion, scouting de localizaciones y casting.'
+  },
+  {
+    id: '4',
+    titulo: 'Taller de Verano',
+    rol: 'Realización Audiovisual',
+    estado: 'FINALIZADO',
+    fecha: 'Julio 2026',
+    detalles: 'Copia maestra y entrega de entregables al cliente.'
   }
+];
 
-  // 3. Email del usuario conectado
-  const emailUsuario = user.emailAddresses[0].emailAddress
+export default function App() {
+  const [vistaActual, setVistaActual] = useState<'rodajes' | 'facturas'>('rodajes');
 
-  // 4. Consulta directa a Supabase
-  const { data: todosLosRodajes } = await supabase
-    .from('rodajes')
-    .select('*')
+  // Datos de usuario simulados (sesión activa)
+  const usuario = {
+    nombre: 'Yoel Martínez Pérez',
+    email: 'yfilmingprod@gmail.com',
+    esAdmin: true
+  };
 
-  // 5. Filtro de permisos por email
-  const rodajesPermitidos = (todosLosRodajes || []).filter((rodaje) => {
-    if (!rodaje.accesos) return false
-    const accesosTexto = JSON.stringify(rodaje.accesos).toLowerCase()
-    return accesosTexto.includes(emailUsuario.toLowerCase())
-  })
+  // Configuración de documento de facturación
+  const [docType, setDocType] = useState<'factura' | 'proforma'>('factura');
+  const [numDoc, setNumDoc] = useState('FAC-2026-001');
+  const [fechaEmision, setFechaEmision] = useState('10/09/2026');
+  const [vencimiento, setVencimiento] = useState('Contado / 30 días');
+
+  // Impuestos
+  const [applyIrpf, setApplyIrpf] = useState(true);
+  const [irpfPercent, setIrpfPercent] = useState<number>(7);
+  const [ivaPercent, setIvaPercent] = useState<number>(21);
+
+  // Datos del Emisor (Yoel)
+  const [emisorNombre, setEmisorNombre] = useState('Yoel Martínez Pérez');
+  const [emisorNif, setEmisorNif] = useState('45604219A');
+  const [emisorDireccion, setEmisorDireccion] = useState('Camino del palmeral 46, nº7');
+  const [emisorTelefono, setEmisorTelefono] = useState('606 44 87 80');
+  const [emisorEmail, setEmisorEmail] = useState('yfilmingprod@gmail.com');
+  const [iban, setIban] = useState('ES28 0049 1126 8628 1006 7481');
+
+  const [clienteNombre, setClienteNombre] = useState('Cliente Producción Audiovisual S.L.');
+  const [clienteCif, setClienteCif] = useState('B98765432');
+  const [clienteDireccion, setClienteDireccion] = useState('Avenida Principal, 45');
+  const [clienteCiudad, setClienteCiudad] = useState('28002 Madrid, España');
+  const [clienteEmail, setClienteEmail] = useState('info@cliente.com');
+
+  const [items, setItems] = useState<InvoiceItem[]>([
+    {
+      id: '1',
+      title: 'Servicio de grabación en exteriores - Jornada 1',
+      description: 'Incluye cobertura técnica de rodaje en exterior y entrega de 6 fotografías procesadas.',
+      qty: 1,
+      price: 103.31
+    },
+    {
+      id: '2',
+      title: 'Servicio de grabación en exteriores - Jornada 2',
+      description: 'Incluye cobertura técnica de rodaje en exterior y entrega de 6 fotografías procesadas.',
+      qty: 1,
+      price: 103.31
+    },
+    {
+      id: '3',
+      title: 'Edición y montaje de vídeo final',
+      description: 'Postproducción de vídeo con corrección de color, etalonaje y hasta 2 rondas de revisiones/cambios incluidas.',
+      qty: 1,
+      price: 206.60
+    }
+  ]);
+
+  const { baseImponible, cuotaIva, retencionIrpf, totalLiquido } = useMemo(() => {
+    const base = items.reduce((acc, item) => acc + (Number(item.qty) || 0) * (Number(item.price) || 0), 0);
+    const iva = base * (ivaPercent / 100);
+    const irpf = applyIrpf ? base * (irpfPercent / 100) : 0;
+    const total = base + iva - irpf;
+    return {
+      baseImponible: base,
+      cuotaIva: iva,
+      retencionIrpf: irpf,
+      totalLiquido: total
+    };
+  }, [items, ivaPercent, applyIrpf, irpfPercent]);
+
+  const formatEuro = (val: number) => {
+    return val.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  };
+
+  const handleDocTypeChange = (newType: 'factura' | 'proforma') => {
+    setDocType(newType);
+    if (newType === 'proforma') {
+      setNumDoc((prev) => (prev.startsWith('FAC-') ? prev.replace('FAC-', 'PRO-') : prev.startsWith('PRO-') ? prev : `PRO-${prev}`));
+    } else {
+      setNumDoc((prev) => (prev.startsWith('PRO-') ? prev.replace('PRO-', 'FAC-') : prev.startsWith('FAC-') ? prev : `FAC-${prev}`));
+    }
+  };
+
+  const updateItem = (id: string, field: keyof InvoiceItem, value: string | number) => {
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          return { ...item, [field]: value };
+        }
+        return item;
+      })
+    );
+  };
+
+  const addItem = () => {
+    const newItem: InvoiceItem = {
+      id: Date.now().toString(),
+      title: 'Nuevo concepto o servicio',
+      description: 'Descripción detallada del trabajo realizado...',
+      qty: 1,
+      price: 0
+    };
+    setItems((prev) => [...prev, newItem]);
+  };
+
+  const removeItem = (id: string) => {
+    if (items.length > 1) {
+      setItems((prev) => prev.filter((item) => item.id !== id));
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans antialiased pt-28 px-6 pb-20">
-      
-      {/* Botón Volver */}
-      <div className="max-w-5xl mx-auto mb-12">
-        <Link 
-          href="/" 
-          className="text-zinc-500 hover:text-white text-sm font-semibold tracking-wider uppercase transition flex items-center gap-2"
-        >
-          ← Volver al inicio
-        </Link>
-      </div>
-
-      <div className="max-w-5xl mx-auto space-y-12">
-        {/* Cabecera del Panel Privado */}
-        <header className="border-b border-zinc-900 pb-10">
-          <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-500 mb-2 block">
-            ÁREA PRIVADA DE PRODUCCIÓN
-          </span>
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white mb-4">
-            Hola, {user.firstName || 'Equipo'}.
-          </h1>
-          <p className="text-zinc-400 text-lg">
-            Estás conectado con <strong className="text-zinc-200">{emailUsuario}</strong>. 
-            Aquí tienes acceso a los rodajes asignados a tu perfil.
-          </p>
-        </header>
-
-        {/* Grid de Proyectos Permitidos */}
-        {rodajesPermitidos.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {rodajesPermitidos.map((rodaje) => (
-              <Link 
-                key={rodaje.id}
-                href={rodaje.enlace || '#'}
-                className="group bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-zinc-500 transition-all block"
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <span className="text-xs font-bold uppercase tracking-widest bg-zinc-900 text-zinc-400 px-3 py-1 rounded-full border border-zinc-800">
-                    {rodaje.estado}
-                  </span>
-                  <span className="text-xl">🎬</span>
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform">
-                  {rodaje.titulo}
-                </h2>
-                <p className="text-zinc-500 text-sm mb-8">Rol asignado: {rodaje.rol}</p>
-                
-                <div className="pt-4 border-t border-zinc-900 flex justify-between items-center text-xs text-zinc-400">
-                  <span>Acceso autorizado</span>
-                  <span className="text-white font-semibold group-hover:underline">Entrar al workspace →</span>
-                </div>
-              </Link>
-            ))}
+    <div className="min-h-screen bg-black text-white font-sans antialiased">
+      {/* Barra superior de navegación del portal */}
+      <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center font-bold text-yellow-500 text-sm">
+              YF
+            </div>
+            <div>
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500 block">
+                YFILMING WORKSPACE
+              </span>
+              <span className="text-sm font-semibold text-zinc-300">
+                Área de Producción & Facturación
+              </span>
+            </div>
           </div>
-        ) : (
-          <div className="bg-zinc-950 border border-zinc-900 rounded-3xl p-12 text-center">
-            <span className="text-4xl block mb-4">🔒</span>
-            <h3 className="text-xl font-bold text-white mb-2">Sin rodajes asignados</h3>
-            <p className="text-zinc-500 text-sm">
-              Tu cuenta ({emailUsuario}) no tiene acceso a ningún proyecto actualmente. Contacta con dirección de producción si crees que es un error.
+
+          <div className="flex items-center gap-3">
+            {/* Pestañas de cambio de vista */}
+            <div className="bg-zinc-900 border border-zinc-800 p-1 rounded-xl flex items-center gap-1 text-xs">
+              <button
+                type="button"
+                onClick={() => setVistaActual('rodajes')}
+                className={`px-3.5 py-1.5 rounded-lg font-medium transition ${
+                  vistaActual === 'rodajes'
+                    ? 'bg-yellow-500 text-black font-semibold shadow'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                🎬 Rodajes Asignados
+              </button>
+              <button
+                type="button"
+                onClick={() => setVistaActual('facturas')}
+                className={`px-3.5 py-1.5 rounded-lg font-medium transition ${
+                  vistaActual === 'facturas'
+                    ? 'bg-yellow-500 text-black font-semibold shadow'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                🧾 Facturación & Proformas
+              </button>
+            </div>
+
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>{usuario.email}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* VISTA 1: PANEL DE RODAJES */}
+      {vistaActual === 'rodajes' && (
+        <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+          {/* Cabecera del Panel */}
+          <div className="border-b border-zinc-900 pb-8 space-y-2">
+            <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-500 block">
+              ÁREA PRIVADA DE PRODUCCIÓN
+            </span>
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white">
+              Hola, {usuario.nombre.split(' ')[0]}.
+            </h1>
+            <p className="text-zinc-400 text-base sm:text-lg">
+              Estás conectado con <strong className="text-zinc-200">{usuario.email}</strong>. 
+              Aquí tienes acceso centralizado a la herramienta de facturación y a las órdenes de producción.
             </p>
           </div>
-        )}
 
-      </div>
+          {}
+          {usuario.esAdmin && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">
+                  Gestión Administrativa
+                </span>
+                <span className="text-[10px] font-bold text-yellow-500 bg-yellow-500/10 px-2.5 py-0.5 rounded-full border border-yellow-500/20">
+                  Acceso Administrador
+                </span>
+              </div>
+
+              <div
+                onClick={() => setVistaActual('facturas')}
+                className="group cursor-pointer relative overflow-hidden bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border border-yellow-500/30 hover:border-yellow-500/70 rounded-3xl p-6 sm:p-8 transition-all duration-300 shadow-xl hover:shadow-yellow-500/5"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-2xl shrink-0">
+                      🧾
+                    </div>
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-bold text-white group-hover:text-yellow-400 transition-colors">
+                        Generador de Facturas & Proformas
+                      </h2>
+                      <p className="text-zinc-400 text-sm mt-1 max-w-xl">
+                        Crea facturas de rodaje y presupuestos proforma con cálculo en tiempo real de IVA, IRPF (7% / 15%) y exportación limpia a PDF.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="sm:text-right shrink-0">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-black bg-yellow-400 group-hover:bg-yellow-300 px-5 py-2.5 rounded-full transition shadow-md">
+                      <span>Abrir Facturación</span>
+                      <span>→</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 block">
+                Rodajes y Proyectos Activos
+              </span>
+              <span className="text-xs text-zinc-500">
+                {PROYECTOS_INICIALES.length} proyectos disponibles
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {PROYECTOS_INICIALES.map((rodaje) => (
+                <div
+                  key={rodaje.id}
+                  className="group bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-zinc-500 transition-all block relative"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="text-xs font-bold uppercase tracking-widest bg-zinc-900 text-zinc-300 px-3 py-1 rounded-full border border-zinc-800">
+                      {rodaje.estado}
+                    </span>
+                    <span className="text-xs text-zinc-500 font-mono">{rodaje.fecha}</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-1 group-hover:translate-x-1 transition-transform">
+                    {rodaje.titulo}
+                  </h3>
+                  <p className="text-zinc-400 text-sm font-medium mb-3">Rol: {rodaje.rol}</p>
+                  <p className="text-zinc-500 text-xs mb-6">{rodaje.detalles}</p>
+
+                  <div className="pt-4 border-t border-zinc-900 flex justify-between items-center text-xs text-zinc-400">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      Acceso autorizado
+                    </span>
+                    <span className="text-yellow-500 font-semibold group-hover:underline">
+                      Abrir workspace →
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      )}
+
+      {}
+      {vistaActual === 'facturas' && (
+        <div className="bg-slate-100 text-slate-800 min-h-[calc(100vh-65px)] p-4 md:p-10">
+          {/* Estilos para exportación e impresión a PDF limpia */}
+          <style>{`
+            @media print {
+              body {
+                background-color: white !important;
+                padding: 0 !important;
+              }
+              header, .no-print {
+                display: none !important;
+              }
+              .page-container {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+              }
+              input, textarea {
+                border-color: transparent !important;
+                background: transparent !important;
+              }
+            }
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+              -webkit-appearance: none;
+              margin: 0;
+            }
+            input[type=number] {
+              -moz-appearance: textfield;
+            }
+          `}</style>
+
+          {/* BARRA DE ACCIÓN Y HERRAMIENTAS (no se imprime) */}
+          <div className="no-print max-w-4xl mx-auto mb-6 flex flex-wrap justify-between items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setVistaActual('rodajes')}
+                className="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1"
+              >
+                ← Volver al Portal
+              </button>
+              <div>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                  ● Cálculo Activo
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center flex-wrap gap-2.5">
+              {/* Tipo de Documento */}
+              <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs shadow-sm">
+                <span className="text-slate-600 font-medium">Tipo:</span>
+                <select
+                  value={docType}
+                  onChange={(e) => handleDocTypeChange(e.target.value as 'factura' | 'proforma')}
+                  className="bg-white border border-slate-200 text-slate-800 text-xs rounded px-2 py-1 font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                >
+                  <option value="factura">Factura Oficial</option>
+                  <option value="proforma">Factura Proforma</option>
+                </select>
+              </div>
+
+              {/* Selector IRPF */}
+              <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs shadow-sm">
+                <label className="flex items-center gap-1.5 cursor-pointer select-none font-medium text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={applyIrpf}
+                    onChange={(e) => setApplyIrpf(e.target.checked)}
+                    className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                  />
+                  <span>IRPF</span>
+                </label>
+                <select
+                  value={irpfPercent}
+                  onChange={(e) => setIrpfPercent(Number(e.target.value))}
+                  disabled={!applyIrpf}
+                  className={`bg-white border border-slate-200 text-slate-800 text-xs rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer ${
+                    !applyIrpf ? 'opacity-50' : ''
+                  }`}
+                >
+                  <option value={7}>7% (Nuevo autónomo)</option>
+                  <option value={15}>15% (General)</option>
+                  <option value={19}>19%</option>
+                </select>
+              </div>
+
+              {/* Selector IVA */}
+              <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs shadow-sm">
+                <span className="text-slate-600 font-medium">IVA:</span>
+                <select
+                  value={ivaPercent}
+                  onChange={(e) => setIvaPercent(Number(e.target.value))}
+                  className="bg-white border border-slate-200 text-slate-800 text-xs rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                >
+                  <option value={21}>21%</option>
+                  <option value={10}>10%</option>
+                  <option value={4}>4%</option>
+                  <option value={0}>0% (Exento)</option>
+                </select>
+              </div>
+
+              {/* Botón Descargar PDF */}
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+              >
+                <span>Descargar en PDF</span>
+              </button>
+            </div>
+          </div>
+
+          {}
+          <div className="page-container max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-md border border-slate-200 text-slate-700">
+            {/* Aviso de Proforma si está seleccionada */}
+            {docType === 'proforma' && (
+              <div className="mb-6 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex items-center gap-2.5">
+                <span className="font-bold text-sm">ℹ️</span>
+                <span>
+                  <strong>DOCUMENTO INFORMATIVO:</strong> Esta factura proforma no tiene validez fiscal ni contable (Art. 6 RD 1619/2012). Se emite a título informativo para la confirmación del presupuesto pactado.
+                </span>
+              </div>
+            )}
+
+            {/* Encabezado */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-8 border-b border-slate-200 gap-4">
+              <div>
+                <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
+                  {docType === 'proforma' ? 'FACTURA PROFORMA' : 'FACTURA'}
+                </h2>
+                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
+                  {docType === 'proforma' ? 'Presupuesto previo vinculante' : 'Servicios Audiovisuales'}
+                </p>
+              </div>
+              <div className="text-left md:text-right space-y-1">
+                <p className="text-sm">
+                  <span className="font-semibold text-slate-600">
+                    {docType === 'proforma' ? 'Nº Proforma:' : 'Nº Factura:'}{' '}
+                  </span>
+                  <input
+                    type="text"
+                    value={numDoc}
+                    onChange={(e) => setNumDoc(e.target.value)}
+                    className="font-mono text-slate-900 font-semibold bg-transparent hover:bg-slate-100 rounded px-1 outline-none text-left md:text-right w-36"
+                  />
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold text-slate-600">Fecha de emisión: </span>
+                  <input
+                    type="text"
+                    value={fechaEmision}
+                    onChange={(e) => setFechaEmision(e.target.value)}
+                    className="text-slate-900 bg-transparent hover:bg-slate-100 rounded px-1 outline-none text-left md:text-right w-32"
+                  />
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold text-slate-600">Vencimiento: </span>
+                  <input
+                    type="text"
+                    value={vencimiento}
+                    onChange={(e) => setVencimiento(e.target.value)}
+                    className="text-slate-900 bg-transparent hover:bg-slate-100 rounded px-1 outline-none text-left md:text-right w-36"
+                  />
+                </p>
+              </div>
+            </div>
+
+            {}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
+              {/* Emisor */}
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Emisor (Tus Datos)</h3>
+                <div className="space-y-1 text-sm">
+                  <input
+                    type="text"
+                    value={emisorNombre}
+                    onChange={(e) => setEmisorNombre(e.target.value)}
+                    className="font-bold text-slate-900 bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1"
+                  />
+                  <div className="flex items-center gap-1 text-slate-600">
+                    <span className="text-slate-500 w-16">NIF:</span>
+                    <input
+                      type="text"
+                      value={emisorNif}
+                      onChange={(e) => setEmisorNif(e.target.value)}
+                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 text-slate-600">
+                    <span className="text-slate-500 w-16">Dirección:</span>
+                    <input
+                      type="text"
+                      value={emisorDireccion}
+                      onChange={(e) => setEmisorDireccion(e.target.value)}
+                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 text-slate-600">
+                    <span className="text-slate-500 w-16">Teléfono:</span>
+                    <input
+                      type="text"
+                      value={emisorTelefono}
+                      onChange={(e) => setEmisorTelefono(e.target.value)}
+                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 text-slate-600">
+                    <span className="text-slate-500 w-16">Email:</span>
+                    <input
+                      type="text"
+                      value={emisorEmail}
+                      onChange={(e) => setEmisorEmail(e.target.value)}
+                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Cliente */}
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Cliente (Receptor)</h3>
+                <div className="space-y-1 text-sm">
+                  <input
+                    type="text"
+                    value={clienteNombre}
+                    onChange={(e) => setClienteNombre(e.target.value)}
+                    className="font-bold text-slate-900 bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1"
+                    placeholder="Nombre o Empresa"
+                  />
+                  <div className="flex items-center gap-1 text-slate-600">
+                    <span className="text-slate-500 w-16">CIF/NIF:</span>
+                    <input
+                      type="text"
+                      value={clienteCif}
+                      onChange={(e) => setClienteCif(e.target.value)}
+                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900 font-mono text-xs"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 text-slate-600">
+                    <span className="text-slate-500 w-16">Dirección:</span>
+                    <input
+                      type="text"
+                      value={clienteDireccion}
+                      onChange={(e) => setClienteDireccion(e.target.value)}
+                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 text-slate-600">
+                    <span className="text-slate-500 w-16">Ciudad:</span>
+                    <input
+                      type="text"
+                      value={clienteCiudad}
+                      onChange={(e) => setClienteCiudad(e.target.value)}
+                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 text-slate-600">
+                    <span className="text-slate-500 w-16">Email:</span>
+                    <input
+                      type="text"
+                      value={clienteEmail}
+                      onChange={(e) => setClienteEmail(e.target.value)}
+                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {}
+            <div className="overflow-x-auto my-6">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <th className="py-3 px-2">Descripción del Servicio</th>
+                    <th className="py-3 px-2 text-center w-20">Cant.</th>
+                    <th className="py-3 px-2 text-right w-32">Precio Base</th>
+                    <th className="py-3 px-2 text-right w-32">Total Base</th>
+                    <th className="py-3 px-1 text-center w-8 no-print"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {items.map((item) => (
+                    <tr key={item.id} className="group hover:bg-slate-50/50 transition">
+                      <td className="py-3 px-2">
+                        <input
+                          type="text"
+                          value={item.title}
+                          onChange={(e) => updateItem(item.id, 'title', e.target.value)}
+                          className="font-semibold text-slate-900 bg-transparent w-full outline-none hover:bg-slate-100 rounded px-1"
+                        />
+                        <textarea
+                          rows={2}
+                          value={item.description}
+                          onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                          className="text-xs text-slate-500 bg-transparent w-full outline-none hover:bg-slate-100 rounded px-1 resize-none mt-0.5"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-center align-top">
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={item.qty}
+                          onChange={(e) => updateItem(item.id, 'qty', parseFloat(e.target.value) || 0)}
+                          className="w-16 text-center bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded px-1 py-1 font-mono focus:ring-1 focus:ring-indigo-500 outline-none"
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-right align-top">
+                        <div className="flex items-center justify-end gap-1">
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={item.price}
+                            onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)}
+                            className="w-24 text-right bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded px-1.5 py-1 font-mono focus:ring-1 focus:ring-indigo-500 outline-none"
+                          />
+                          <span className="text-slate-400 font-mono text-xs">€</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-2 text-right align-top font-mono font-semibold text-slate-900">
+                        {formatEuro(item.qty * item.price)}
+                      </td>
+                      <td className="py-3 px-1 text-center align-top no-print">
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          title="Eliminar fila"
+                          className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1"
+                        >
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="mt-3 no-print">
+                <button
+                  type="button"
+                  onClick={addItem}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>+</span> Añadir concepto
+                </button>
+              </div>
+            </div>
+
+            {}
+            <div className="flex flex-col md:flex-row justify-between items-start pt-6 border-t border-slate-200 gap-6">
+              <div className="w-full md:w-1/2 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Instrucciones de Pago</h4>
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1.5 text-slate-600">
+                  <p>
+                    <span className="font-medium text-slate-900">Método de pago:</span> Transferencia bancaria
+                  </p>
+                  <p>
+                    <span className="font-medium text-slate-900">Titular:</span> {emisorNombre}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium text-slate-900">IBAN:</span>
+                    <input
+                      type="text"
+                      value={iban}
+                      onChange={(e) => setIban(e.target.value)}
+                      className="font-mono bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-800"
+                    />
+                  </div>
+                  <p>
+                    <span className="font-medium text-slate-900">Concepto de pago:</span>{' '}
+                    <span className="font-medium text-indigo-600">
+                      {docType === 'proforma' ? `Proforma ${numDoc}` : `Factura ${numDoc}`}
+                    </span>
+                  </p>
+                </div>
+                <p className="text-xs text-slate-400 italic">
+                  * Los derechos de uso del material audiovisual quedan cedidos tras el pago íntegro de la presente factura.
+                </p>
+              </div>
+
+              <div className="w-full md:w-5/12 space-y-2">
+                <div className="flex justify-between py-1 text-sm text-slate-600">
+                  <span>Base Imponible:</span>
+                  <span className="font-mono font-medium text-slate-900">{formatEuro(baseImponible)}</span>
+                </div>
+                <div className="flex justify-between py-1 text-sm text-slate-600">
+                  <span>IVA ({ivaPercent}%):</span>
+                  <span className="font-mono font-medium text-slate-900">+ {formatEuro(cuotaIva)}</span>
+                </div>
+                {applyIrpf && (
+                  <div className="flex justify-between py-1 text-sm text-red-600">
+                    <span>Retención IRPF (-{irpfPercent}%):</span>
+                    <span className="font-mono font-medium">- {formatEuro(retencionIrpf)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between py-3 border-t-2 border-slate-800 text-slate-900">
+                  <span className="text-base font-bold">Total a Percibir:</span>
+                  <span className="text-lg font-bold font-mono text-indigo-700">{formatEuro(totalLiquido)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Pie de página */}
+            <footer className="mt-12 pt-6 border-t border-slate-100 text-center text-xs text-slate-400 space-y-1">
+              <p>Gracias por su confianza. Factura emitida de conformidad con la legislación fiscal vigente.</p>
+              {docType === 'proforma' && (
+                <p className="text-[11px] text-amber-700 italic">
+                  * Nota legal: Este documento carece de validez fiscal y registral. La factura ordinaria definitiva será expedida una vez abonado o confirmado el servicio.
+                </p>
+              )}
+            </footer>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }
