@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 
 interface Rodaje {
   id: string;
@@ -7,6 +10,7 @@ interface Rodaje {
   estado: string;
   fecha: string;
   detalles: string;
+  enlace: string;
 }
 
 interface InvoiceItem {
@@ -20,55 +24,77 @@ interface InvoiceItem {
 const PROYECTOS_INICIALES: Rodaje[] = [
   {
     id: '1',
-    titulo: 'Amor Procesado',
-    rol: 'Dirección de Fotografía / Operador',
-    estado: 'EN RODAJE',
-    fecha: 'Septiembre 2026',
-    detalles: 'Plan de rodaje de exteriores y secuencias nocturnas.'
+    titulo: 'Phil Weasley',
+    rol: 'Director & Cámara',
+    estado: 'POSTPRODUCCIÓN',
+    fecha: '2026',
+    detalles: 'Etalonaje de color, diseño de sonido y masterización final.',
+    enlace: '/rodajes/phil-weasley'
   },
   {
     id: '2',
-    titulo: 'Phil Weasley',
-    rol: 'Cámara & Edición',
-    estado: 'POSTPRODUCCIÓN',
-    fecha: 'Agosto - Septiembre 2026',
-    detalles: 'Etalonaje, diseño sonoro y montaje final.'
+    titulo: 'Amor Procesado',
+    rol: 'Dirección',
+    estado: 'PREPRODUCCIÓN',
+    fecha: '2026',
+    detalles: 'Plan de rodaje de exteriores y secuencias nocturnas en preparación.',
+    enlace: '/rodajes/amor-procesado'
   },
   {
     id: '3',
     titulo: 'Miel',
-    rol: 'Director / Productor Ejecutivo',
-    estado: 'PREPRODUCCIÓN',
-    fecha: 'Octubre 2026',
-    detalles: 'Desglose de guion, scouting de localizaciones y casting.'
+    rol: 'Camera Man & Ay. Dirección',
+    estado: 'POSTPRODUCCIÓN',
+    fecha: '2026',
+    detalles: 'Edición de montaje y sincronización de pistas de audio.',
+    enlace: '/rodajes/miel'
   },
   {
     id: '4',
     titulo: 'Taller de Verano',
-    rol: 'Realización Audiovisual',
+    rol: 'Dirección / Formación',
+    estado: 'EN RODAJE',
+    fecha: '2026',
+    detalles: 'Módulo formativo intensivo de 5 jornadas y material de estudio.',
+    enlace: '/rodajes/taller-verano'
+  },
+  {
+    id: '5',
+    titulo: 'Frontera',
+    rol: 'Dir. Producción',
+    estado: 'PREPRODUCCIÓN',
+    fecha: '2026',
+    detalles: 'Planificación logística, contratos y permisos de localización.',
+    enlace: '#'
+  },
+  {
+    id: '6',
+    titulo: 'Fototaxia & Parpadear',
+    rol: 'Cámara & Producción',
     estado: 'FINALIZADO',
-    fecha: 'Julio 2026',
-    detalles: 'Copia maestra y entrega de entregables al cliente.'
+    fecha: '2026',
+    detalles: 'Copias maestras entregadas y material de archivo preservado.',
+    enlace: '#'
   }
 ];
 
-export default function App() {
+export default function RodajesPage() {
   const [vistaActual, setVistaActual] = useState<'rodajes' | 'facturas'>('rodajes');
 
-  // Datos de usuario simulados (sesión activa)
+  // Datos del perfil activo
   const usuario = {
     nombre: 'Yoel Martínez Pérez',
-    email: 'yfilmingprod@gmail.com',
+    email: 'yoelmartinezperez@gmail.com',
     esAdmin: true
   };
 
-  // Configuración de documento de facturación
+  // Parámetros de la factura o presupuesto
   const [docType, setDocType] = useState<'factura' | 'proforma'>('factura');
   const [numDoc, setNumDoc] = useState('FAC-2026-001');
-  const [fechaEmision, setFechaEmision] = useState('10/09/2026');
-  const [vencimiento, setVencimiento] = useState('Contado / 30 días');
+  const [fechaEmision, setFechaEmision] = useState('11/09/2026');
+  const [vencimiento, setVencimiento] = useState('30 días / Contado');
 
-  // Impuestos
+  // Parámetros fiscales
   const [applyIrpf, setApplyIrpf] = useState(true);
   const [irpfPercent, setIrpfPercent] = useState<number>(7);
   const [ivaPercent, setIvaPercent] = useState<number>(21);
@@ -81,38 +107,43 @@ export default function App() {
   const [emisorEmail, setEmisorEmail] = useState('yfilmingprod@gmail.com');
   const [iban, setIban] = useState('ES28 0049 1126 8628 1006 7481');
 
-  const [clienteNombre, setClienteNombre] = useState('Cliente Producción Audiovisual S.L.');
+  // Datos del Cliente Receptor
+  const [clienteNombre, setClienteNombre] = useState('Productora Audiovisual S.L.');
   const [clienteCif, setClienteCif] = useState('B98765432');
-  const [clienteDireccion, setClienteDireccion] = useState('Avenida Principal, 45');
-  const [clienteCiudad, setClienteCiudad] = useState('28002 Madrid, España');
-  const [clienteEmail, setClienteEmail] = useState('info@cliente.com');
+  const [clienteDireccion, setClienteDireccion] = useState('Avenida de la Industria, 14');
+  const [clienteCiudad, setClienteCiudad] = useState('46001 València, España');
+  const [clienteEmail, setClienteEmail] = useState('contacto@productora.com');
 
+  // Conceptos facturables
   const [items, setItems] = useState<InvoiceItem[]>([
     {
       id: '1',
-      title: 'Servicio de grabación en exteriores - Jornada 1',
-      description: 'Incluye cobertura técnica de rodaje en exterior y entrega de 6 fotografías procesadas.',
+      title: 'Servicio de filmación en exteriores - Jornada 1',
+      description: 'Cobertura con cámara de cine, ópticas fijas y monitorización técnica.',
       qty: 1,
       price: 103.31
     },
     {
       id: '2',
-      title: 'Servicio de grabación en exteriores - Jornada 2',
-      description: 'Incluye cobertura técnica de rodaje en exterior y entrega de 6 fotografías procesadas.',
+      title: 'Servicio de filmación en exteriores - Jornada 2',
+      description: 'Grabación de secuencias diurnas y entrega de brutos respaldados.',
       qty: 1,
       price: 103.31
     },
     {
       id: '3',
-      title: 'Edición y montaje de vídeo final',
-      description: 'Postproducción de vídeo con corrección de color, etalonaje y hasta 2 rondas de revisiones/cambios incluidas.',
+      title: 'Montaje, etalonaje y diseño sonoro final',
+      description: 'Postproducción completa en DaVinci Resolve con 2 revisiones incluidas.',
       qty: 1,
       price: 206.60
     }
   ]);
 
   const { baseImponible, cuotaIva, retencionIrpf, totalLiquido } = useMemo(() => {
-    const base = items.reduce((acc, item) => acc + (Number(item.qty) || 0) * (Number(item.price) || 0), 0);
+    const base = items.reduce(
+      (acc, item) => acc + (Number(item.qty) || 0) * (Number(item.price) || 0),
+      0
+    );
     const iva = base * (ivaPercent / 100);
     const irpf = applyIrpf ? base * (irpfPercent / 100) : 0;
     const total = base + iva - irpf;
@@ -151,10 +182,10 @@ export default function App() {
   const addItem = () => {
     const newItem: InvoiceItem = {
       id: Date.now().toString(),
-      title: 'Nuevo concepto o servicio',
-      description: 'Descripción detallada del trabajo realizado...',
+      title: 'Nuevo concepto de servicio audiovisual',
+      description: 'Descripción detallada de la jornada o tarea técnica realizada...',
       qty: 1,
-      price: 0
+      price: 150.00
     };
     setItems((prev) => [...prev, newItem]);
   };
@@ -166,223 +197,269 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans antialiased">
-      {/* Barra superior de navegación del portal */}
-      <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+    <div className="min-h-screen bg-black text-white font-sans antialiased selection:bg-yellow-500/30 selection:text-yellow-400">
+      
+      {}
+      {/* Barra de navegación superior */}
+      <header className="no-print sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-900 px-4 md:px-8 py-3.5">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+          
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center font-bold text-yellow-500 text-sm">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400/20 via-yellow-500/10 to-transparent border border-yellow-500/30 flex items-center justify-center font-black text-yellow-500 text-sm shadow-inner">
               YF
             </div>
             <div>
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-yellow-500 block">
-                YFILMING WORKSPACE
-              </span>
-              <span className="text-sm font-semibold text-zinc-300">
-                Área de Producción & Facturación
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-yellow-500">
+                  YFILMING WORKSPACE
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Activo
+                </span>
+              </div>
+              <span className="text-xs text-zinc-400 font-medium">Control de Producción & Facturación</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Pestañas de cambio de vista */}
-            <div className="bg-zinc-900 border border-zinc-800 p-1 rounded-xl flex items-center gap-1 text-xs">
-              <button
-                type="button"
-                onClick={() => setVistaActual('rodajes')}
-                className={`px-3.5 py-1.5 rounded-lg font-medium transition ${
-                  vistaActual === 'rodajes'
-                    ? 'bg-yellow-500 text-black font-semibold shadow'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                🎬 Rodajes Asignados
-              </button>
-              <button
-                type="button"
-                onClick={() => setVistaActual('facturas')}
-                className={`px-3.5 py-1.5 rounded-lg font-medium transition ${
-                  vistaActual === 'facturas'
-                    ? 'bg-yellow-500 text-black font-semibold shadow'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                🧾 Facturación & Proformas
-              </button>
-            </div>
+          <nav className="flex items-center bg-zinc-900/90 border border-zinc-800 p-1 rounded-2xl text-xs font-semibold shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setVistaActual('rodajes')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                vistaActual === 'rodajes'
+                  ? 'bg-yellow-500 text-black font-bold shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <span>🎬</span>
+              <span>Rodajes & Proyectos</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setVistaActual('facturas')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                vistaActual === 'facturas'
+                  ? 'bg-yellow-500 text-black font-bold shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <span>🧾</span>
+              <span>Generador de Facturas</span>
+            </button>
+          </nav>
 
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span>{usuario.email}</span>
-            </div>
+          <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+            <span className="text-zinc-300 font-mono text-[11px]">{usuario.email}</span>
           </div>
+
         </div>
       </header>
 
-      {/* VISTA 1: PANEL DE RODAJES */}
+      {}
+      {/* VISTA 1: TABLERO DE RODAJES */}
       {vistaActual === 'rodajes' && (
-        <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
-          {/* Cabecera del Panel */}
-          <div className="border-b border-zinc-900 pb-8 space-y-2">
-            <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-500 block">
-              ÁREA PRIVADA DE PRODUCCIÓN
-            </span>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white">
-              Hola, {usuario.nombre.split(' ')[0]}.
-            </h1>
-            <p className="text-zinc-400 text-base sm:text-lg">
-              Estás conectado con <strong className="text-zinc-200">{usuario.email}</strong>. 
-              Aquí tienes acceso centralizado a la herramienta de facturación y a las órdenes de producción.
-            </p>
+        <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
+          
+          {/* Hero Banner */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border border-zinc-800/80 p-6 md:p-10 shadow-2xl">
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-yellow-500/10 blur-[130px] pointer-events-none rounded-full" />
+            <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+              <div className="space-y-2">
+                <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-500">PANEL PRIVADO DE CONTROL</span>
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white">Hola, Yoel.</h1>
+                <p className="text-zinc-400 max-w-2xl text-sm md:text-base">
+                  Supervisa el estado de tus producciones activas, accede al desglose de proyectos o genera presupuestos y facturas oficiales listas para descargar.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setVistaActual('facturas')}
+                className="cursor-pointer group flex items-center gap-3 px-5 py-3 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold text-xs uppercase tracking-wider transition-all transform active:scale-95 shadow-lg shadow-yellow-500/20"
+              >
+                <span>Nueva Factura / Proforma</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-8 border-t border-zinc-800/80">
+              <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-2xl">
+                <span className="text-zinc-400 text-xs block">Proyectos Activos</span>
+                <span className="text-2xl font-black text-white mt-1 block">5</span>
+              </div>
+              <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-2xl">
+                <span className="text-zinc-400 text-xs block">En Postproducción</span>
+                <span className="text-2xl font-black text-yellow-400 mt-1 block">2</span>
+              </div>
+              <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-2xl">
+                <span className="text-zinc-400 text-xs block">En Preproducción</span>
+                <span className="text-2xl font-black text-sky-400 mt-1 block">2</span>
+              </div>
+              <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-2xl">
+                <span className="text-zinc-400 text-xs block">Finalizados</span>
+                <span className="text-2xl font-black text-emerald-400 mt-1 block">1</span>
+              </div>
+            </div>
           </div>
 
-          {}
-          {usuario.esAdmin && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">
-                  Gestión Administrativa
-                </span>
-                <span className="text-[10px] font-bold text-yellow-500 bg-yellow-500/10 px-2.5 py-0.5 rounded-full border border-yellow-500/20">
-                  Acceso Administrador
-                </span>
-              </div>
-
-              <div
-                onClick={() => setVistaActual('facturas')}
-                className="group cursor-pointer relative overflow-hidden bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border border-yellow-500/30 hover:border-yellow-500/70 rounded-3xl p-6 sm:p-8 transition-all duration-300 shadow-xl hover:shadow-yellow-500/5"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-2xl shrink-0">
-                      🧾
-                    </div>
-                    <div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-white group-hover:text-yellow-400 transition-colors">
-                        Generador de Facturas & Proformas
-                      </h2>
-                      <p className="text-zinc-400 text-sm mt-1 max-w-xl">
-                        Crea facturas de rodaje y presupuestos proforma con cálculo en tiempo real de IVA, IRPF (7% / 15%) y exportación limpia a PDF.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="sm:text-right shrink-0">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-black bg-yellow-400 group-hover:bg-yellow-300 px-5 py-2.5 rounded-full transition shadow-md">
-                      <span>Abrir Facturación</span>
-                      <span>→</span>
-                    </span>
-                  </div>
+          {/* Módulo destacado: Taller de Verano */}
+          <div className="bg-zinc-950 border border-yellow-500/30 rounded-3xl p-6 md:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-900 pb-5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-widest text-yellow-500">MÓDULO DE FORMACIÓN</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                    5 Jornadas
+                  </span>
                 </div>
+                <h2 className="text-2xl font-black text-white mt-1">Taller de Verano: Plan Diario</h2>
               </div>
-            </div>
-          )}
-
-          {}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 block">
-                Rodajes y Proyectos Activos
-              </span>
-              <span className="text-xs text-zinc-500">
-                {PROYECTOS_INICIALES.length} proyectos disponibles
-              </span>
+              <Link
+                href="/rodajes/taller-verano"
+                className="text-xs font-bold text-yellow-400 hover:text-yellow-300 transition"
+              >
+                Abrir Workspace Completo →
+              </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {PROYECTOS_INICIALES.map((rodaje) => (
-                <div
-                  key={rodaje.id}
-                  className="group bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-zinc-500 transition-all block relative"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="text-xs font-bold uppercase tracking-widest bg-zinc-900 text-zinc-300 px-3 py-1 rounded-full border border-zinc-800">
-                      {rodaje.estado}
-                    </span>
-                    <span className="text-xs text-zinc-500 font-mono">{rodaje.fecha}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {[
+                { dia: 'DÍA 1', icono: '🎬', titulo: 'Iniciación & Guion', desc: 'Lectura técnica, desglose de personajes y desglose de escenas.' },
+                { dia: 'DÍA 2', icono: '💡', titulo: 'Interiores & Luz', desc: 'Esquemas de 3 puntos de luz, temperatura de color y sonido directo.' },
+                { dia: 'DÍA 3', icono: '🎥', titulo: 'Exteriores', desc: 'Cámara en mano, ópticas anamórficas y control de luz natural.' },
+                { dia: 'DÍA 4', icono: '🔥', titulo: 'Acción & Ritmo', desc: 'Planos secuencia complejos, coreografía de cámara y marcas de foco.' },
+                { dia: 'DÍA 5', icono: '🏆', titulo: 'Montaje & Estreno', desc: 'Etalonaje en DaVinci, diseño sonoro y visionado de piezas finales.' }
+              ].map((j, idx) => (
+                <div key={idx} className="bg-zinc-900/60 border border-zinc-800 hover:border-yellow-500/50 transition-all rounded-2xl p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-extrabold text-yellow-400">{j.dia}</span>
+                      <span className="text-base">{j.icono}</span>
+                    </div>
+                    <h3 className="font-bold text-white text-sm">{j.titulo}</h3>
+                    <p className="text-zinc-400 text-xs mt-1">{j.desc}</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-1 group-hover:translate-x-1 transition-transform">
-                    {rodaje.titulo}
-                  </h3>
-                  <p className="text-zinc-400 text-sm font-medium mb-3">Rol: {rodaje.rol}</p>
-                  <p className="text-zinc-500 text-xs mb-6">{rodaje.detalles}</p>
-
-                  <div className="pt-4 border-t border-zinc-900 flex justify-between items-center text-xs text-zinc-400">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      Acceso autorizado
-                    </span>
-                    <span className="text-yellow-500 font-semibold group-hover:underline">
-                      Abrir workspace →
-                    </span>
+                  <div className="mt-4 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+                    <span>Drive listo</span>
+                    <Link href="/rodajes/taller-verano" className="text-yellow-400 font-semibold hover:underline">
+                      Ver docs
+                    </Link>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Grid de Proyectos */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black text-white">Filmografía & Rodajes Oficiales</h2>
+              <span className="text-xs text-zinc-500">Área Privada YFILMING</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {PROYECTOS_INICIALES.map((rodaje) => (
+                <div
+                  key={rodaje.id}
+                  className="bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700 rounded-3xl p-6 transition-all space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                      {rodaje.estado}
+                    </span>
+                    <span className="text-xs font-mono text-zinc-500">{rodaje.fecha}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">{rodaje.titulo}</h3>
+                    <p className="text-xs font-medium text-yellow-500/90 mt-0.5">Rol: {rodaje.rol}</p>
+                    <p className="text-xs text-zinc-400 mt-2">{rodaje.detalles}</p>
+                  </div>
+                  <div className="pt-4 border-t border-zinc-900 flex justify-between items-center text-xs">
+                    <span className="text-zinc-500">Workspace privado</span>
+                    {rodaje.enlace !== '#' ? (
+                      <Link href={rodaje.enlace} className="text-yellow-400 font-bold hover:underline">
+                        Acceder →
+                      </Link>
+                    ) : (
+                      <span className="text-zinc-600">En archivo</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </main>
       )}
 
       {}
+      {/* VISTA 2: GENERADOR DE FACTURAS Y PROFORMAS */}
       {vistaActual === 'facturas' && (
-        <div className="bg-slate-100 text-slate-800 min-h-[calc(100vh-65px)] p-4 md:p-10">
-          {/* Estilos para exportación e impresión a PDF limpia */}
-          <style>{`
-            @media print {
-              body {
-                background-color: white !important;
-                padding: 0 !important;
+        <div className="bg-zinc-900/40 min-h-[calc(100vh-65px)] p-4 md:p-8 space-y-6">
+          
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              @media print {
+                body {
+                  background: #ffffff !important;
+                  color: #0f172a !important;
+                  padding: 0 !important;
+                }
+                header, .no-print {
+                  display: none !important;
+                }
+                .invoice-sheet {
+                  box-shadow: none !important;
+                  border: none !important;
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                }
+                input, textarea, select {
+                  border: none !important;
+                  background: transparent !important;
+                }
               }
-              header, .no-print {
-                display: none !important;
+              input[type=number]::-webkit-inner-spin-button,
+              input[type=number]::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
               }
-              .page-container {
-                box-shadow: none !important;
-                border: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                max-width: 100% !important;
+              input[type=number] {
+                -moz-appearance: textfield;
               }
-              input, textarea {
-                border-color: transparent !important;
-                background: transparent !important;
-              }
-            }
-            input::-webkit-outer-spin-button,
-            input::-webkit-inner-spin-button {
-              -webkit-appearance: none;
-              margin: 0;
-            }
-            input[type=number] {
-              -moz-appearance: textfield;
-            }
-          `}</style>
+            `
+          }} />
 
-          {/* BARRA DE ACCIÓN Y HERRAMIENTAS (no se imprime) */}
-          <div className="no-print max-w-4xl mx-auto mb-6 flex flex-wrap justify-between items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+          {/* Barra de herramientas (No se imprime) */}
+          <div className="no-print bg-zinc-950 border border-zinc-800 rounded-2xl p-4 md:p-6 shadow-xl flex flex-wrap items-center justify-between gap-4 max-w-5xl mx-auto">
+            
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setVistaActual('rodajes')}
-                className="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1"
+                className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-2 border border-zinc-800 transition cursor-pointer"
               >
-                ← Volver al Portal
+                <span>←</span>
+                <span>Volver a Rodajes</span>
               </button>
-              <div>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                  ● Cálculo Activo
-                </span>
+              <div className="hidden sm:block">
+                <span className="text-xs font-bold text-white">Generador Audiovisual</span>
+                <span className="text-[11px] text-zinc-500 block">Cálculos automáticos en tiempo real</span>
               </div>
             </div>
 
-            <div className="flex items-center flex-wrap gap-2.5">
-              {/* Tipo de Documento */}
-              <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs shadow-sm">
-                <span className="text-slate-600 font-medium">Tipo:</span>
+            <div className="flex flex-wrap items-center gap-3 text-xs">
+              
+              {/* Selector de tipo de documento */}
+              <div className="bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                <span className="text-zinc-400 font-medium">Documento:</span>
                 <select
                   value={docType}
                   onChange={(e) => handleDocTypeChange(e.target.value as 'factura' | 'proforma')}
-                  className="bg-white border border-slate-200 text-slate-800 text-xs rounded px-2 py-1 font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                  className="bg-zinc-950 text-white font-bold rounded px-2 py-1 outline-none border border-zinc-700 cursor-pointer"
                 >
                   <option value="factura">Factura Oficial</option>
                   <option value="proforma">Factura Proforma</option>
@@ -390,13 +467,13 @@ export default function App() {
               </div>
 
               {/* Selector IRPF */}
-              <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs shadow-sm">
-                <label className="flex items-center gap-1.5 cursor-pointer select-none font-medium text-slate-700">
+              <div className="bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                <label className="flex items-center gap-1.5 cursor-pointer select-none text-zinc-300 font-medium">
                   <input
                     type="checkbox"
                     checked={applyIrpf}
                     onChange={(e) => setApplyIrpf(e.target.checked)}
-                    className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                    className="rounded text-yellow-500 focus:ring-0 cursor-pointer"
                   />
                   <span>IRPF</span>
                 </label>
@@ -404,23 +481,23 @@ export default function App() {
                   value={irpfPercent}
                   onChange={(e) => setIrpfPercent(Number(e.target.value))}
                   disabled={!applyIrpf}
-                  className={`bg-white border border-slate-200 text-slate-800 text-xs rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer ${
-                    !applyIrpf ? 'opacity-50' : ''
+                  className={`bg-zinc-950 text-white font-bold rounded px-1.5 py-1 outline-none border border-zinc-700 cursor-pointer ${
+                    !applyIrpf ? 'opacity-40' : ''
                   }`}
                 >
-                  <option value={7}>7% (Nuevo autónomo)</option>
+                  <option value={7}>7% (Nuevo Autónomo)</option>
                   <option value={15}>15% (General)</option>
                   <option value={19}>19%</option>
                 </select>
               </div>
 
               {/* Selector IVA */}
-              <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs shadow-sm">
-                <span className="text-slate-600 font-medium">IVA:</span>
+              <div className="bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                <span className="text-zinc-400 font-medium">IVA:</span>
                 <select
                   value={ivaPercent}
                   onChange={(e) => setIvaPercent(Number(e.target.value))}
-                  className="bg-white border border-slate-200 text-slate-800 text-xs rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                  className="bg-zinc-950 text-white font-bold rounded px-2 py-1 outline-none border border-zinc-700 cursor-pointer"
                 >
                   <option value={21}>21%</option>
                   <option value={10}>10%</option>
@@ -429,201 +506,210 @@ export default function App() {
                 </select>
               </div>
 
-              {/* Botón Descargar PDF */}
+              {/* Botón Imprimir / PDF */}
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold uppercase tracking-wider text-xs flex items-center gap-2 shadow-lg shadow-yellow-500/20 transition active:scale-95 cursor-pointer"
               >
+                <span>🖨️</span>
                 <span>Descargar en PDF</span>
               </button>
+
             </div>
           </div>
 
           {}
-          <div className="page-container max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-md border border-slate-200 text-slate-700">
-            {/* Aviso de Proforma si está seleccionada */}
+          {/* Hoja A4 Imprimible */}
+          <div className="invoice-sheet bg-white text-slate-800 rounded-3xl p-8 md:p-14 shadow-2xl border border-zinc-300 max-w-4xl mx-auto space-y-8 font-sans">
+            
+            {/* Aviso informativo de Proforma */}
             {docType === 'proforma' && (
-              <div className="mb-6 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex items-center gap-2.5">
-                <span className="font-bold text-sm">ℹ️</span>
-                <span>
-                  <strong>DOCUMENTO INFORMATIVO:</strong> Esta factura proforma no tiene validez fiscal ni contable (Art. 6 RD 1619/2012). Se emite a título informativo para la confirmación del presupuesto pactado.
-                </span>
+              <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-center gap-2">
+                <span className="text-base">ℹ️</span>
+                <span><strong>DOCUMENTO INFORMATIVO:</strong> Esta factura proforma no tiene validez fiscal ni contable (Art. 6 RD 1619/2012). Se emite a efectos presupuestarios previos al inicio del servicio.</span>
               </div>
             )}
 
-            {/* Encabezado */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-8 border-b border-slate-200 gap-4">
+            {/* Cabecera */}
+            <div className="flex flex-col md:flex-row justify-between items-start gap-6 border-b border-slate-200 pb-8">
               <div>
-                <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-600 block">
+                  YFILMING CINEMATOGRAPHY
+                </span>
+                <h2 className="text-3xl font-black tracking-tight text-slate-900 mt-1">
                   {docType === 'proforma' ? 'FACTURA PROFORMA' : 'FACTURA'}
                 </h2>
-                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
-                  {docType === 'proforma' ? 'Presupuesto previo vinculante' : 'Servicios Audiovisuales'}
+                <p className="text-xs text-slate-400 uppercase tracking-wider mt-0.5">
+                  {docType === 'proforma' ? 'Presupuesto previo vinculante' : 'Servicios Audiovisuales Profesionales'}
                 </p>
               </div>
-              <div className="text-left md:text-right space-y-1">
-                <p className="text-sm">
-                  <span className="font-semibold text-slate-600">
-                    {docType === 'proforma' ? 'Nº Proforma:' : 'Nº Factura:'}{' '}
+
+              <div className="space-y-1 text-sm text-left md:text-right">
+                <div className="flex items-center md:justify-end gap-2">
+                  <span className="font-bold text-slate-700">
+                    {docType === 'proforma' ? 'Nº Proforma:' : 'Nº Factura:'}
                   </span>
                   <input
                     type="text"
                     value={numDoc}
                     onChange={(e) => setNumDoc(e.target.value)}
-                    className="font-mono text-slate-900 font-semibold bg-transparent hover:bg-slate-100 rounded px-1 outline-none text-left md:text-right w-36"
+                    className="font-mono font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded px-2 py-0.5 w-36 text-left md:text-right outline-none"
                   />
-                </p>
-                <p className="text-sm">
-                  <span className="font-semibold text-slate-600">Fecha de emisión: </span>
+                </div>
+                <div className="flex items-center md:justify-end gap-2">
+                  <span className="text-slate-600">Fecha de Emisión:</span>
                   <input
                     type="text"
                     value={fechaEmision}
                     onChange={(e) => setFechaEmision(e.target.value)}
-                    className="text-slate-900 bg-transparent hover:bg-slate-100 rounded px-1 outline-none text-left md:text-right w-32"
+                    className="text-slate-900 bg-slate-50 border border-slate-200 rounded px-2 py-0.5 w-32 text-left md:text-right outline-none"
                   />
-                </p>
-                <p className="text-sm">
-                  <span className="font-semibold text-slate-600">Vencimiento: </span>
+                </div>
+                <div className="flex items-center md:justify-end gap-2">
+                  <span className="text-slate-600">Vencimiento:</span>
                   <input
                     type="text"
                     value={vencimiento}
                     onChange={(e) => setVencimiento(e.target.value)}
-                    className="text-slate-900 bg-transparent hover:bg-slate-100 rounded px-1 outline-none text-left md:text-right w-36"
+                    className="text-slate-900 bg-slate-50 border border-slate-200 rounded px-2 py-0.5 w-36 text-left md:text-right outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Datos Emisor y Cliente */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+              
+              {/* Emisor (Yoel) */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2">
+                  Emisor (Tus Datos)
+                </span>
+                <input
+                  type="text"
+                  value={emisorNombre}
+                  onChange={(e) => setEmisorNombre(e.target.value)}
+                  className="w-full font-bold text-slate-900 bg-transparent outline-none text-base"
+                />
+                <p className="text-xs text-slate-600 flex gap-2">
+                  <span className="w-16 font-medium text-slate-400">NIF:</span>
+                  <input
+                    type="text"
+                    value={emisorNif}
+                    onChange={(e) => setEmisorNif(e.target.value)}
+                    className="bg-transparent text-slate-800 outline-none w-full"
+                  />
+                </p>
+                <p className="text-xs text-slate-600 flex gap-2">
+                  <span className="w-16 font-medium text-slate-400">Dirección:</span>
+                  <input
+                    type="text"
+                    value={emisorDireccion}
+                    onChange={(e) => setEmisorDireccion(e.target.value)}
+                    className="bg-transparent text-slate-800 outline-none w-full"
+                  />
+                </p>
+                <p className="text-xs text-slate-600 flex gap-2">
+                  <span className="w-16 font-medium text-slate-400">Teléfono:</span>
+                  <input
+                    type="text"
+                    value={emisorTelefono}
+                    onChange={(e) => setEmisorTelefono(e.target.value)}
+                    className="bg-transparent text-slate-800 outline-none w-full"
+                  />
+                </p>
+                <p className="text-xs text-slate-600 flex gap-2">
+                  <span className="w-16 font-medium text-slate-400">Email:</span>
+                  <input
+                    type="text"
+                    value={emisorEmail}
+                    onChange={(e) => setEmisorEmail(e.target.value)}
+                    className="bg-transparent text-slate-800 outline-none w-full"
                   />
                 </p>
               </div>
+
+              {/* Cliente Receptor */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2">
+                  Cliente / Receptor
+                </span>
+                <input
+                  type="text"
+                  value={clienteNombre}
+                  onChange={(e) => setClienteNombre(e.target.value)}
+                  className="w-full font-bold text-slate-900 bg-transparent outline-none text-base"
+                  placeholder="Nombre de la Empresa o Cliente"
+                />
+                <p className="text-xs text-slate-600 flex gap-2">
+                  <span className="w-16 font-medium text-slate-400">CIF/NIF:</span>
+                  <input
+                    type="text"
+                    value={clienteCif}
+                    onChange={(e) => setClienteCif(e.target.value)}
+                    className="bg-transparent text-slate-800 outline-none w-full font-mono"
+                  />
+                </p>
+                <p className="text-xs text-slate-600 flex gap-2">
+                  <span className="w-16 font-medium text-slate-400">Dirección:</span>
+                  <input
+                    type="text"
+                    value={clienteDireccion}
+                    onChange={(e) => setClienteDireccion(e.target.value)}
+                    className="bg-transparent text-slate-800 outline-none w-full"
+                  />
+                </p>
+                <p className="text-xs text-slate-600 flex gap-2">
+                  <span className="w-16 font-medium text-slate-400">Ciudad:</span>
+                  <input
+                    type="text"
+                    value={clienteCiudad}
+                    onChange={(e) => setClienteCiudad(e.target.value)}
+                    className="bg-transparent text-slate-800 outline-none w-full"
+                  />
+                </p>
+                <p className="text-xs text-slate-600 flex gap-2">
+                  <span className="w-16 font-medium text-slate-400">Email:</span>
+                  <input
+                    type="text"
+                    value={clienteEmail}
+                    onChange={(e) => setClienteEmail(e.target.value)}
+                    className="bg-transparent text-slate-800 outline-none w-full"
+                  />
+                </p>
+              </div>
+
             </div>
 
             {}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
-              {/* Emisor */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Emisor (Tus Datos)</h3>
-                <div className="space-y-1 text-sm">
-                  <input
-                    type="text"
-                    value={emisorNombre}
-                    onChange={(e) => setEmisorNombre(e.target.value)}
-                    className="font-bold text-slate-900 bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1"
-                  />
-                  <div className="flex items-center gap-1 text-slate-600">
-                    <span className="text-slate-500 w-16">NIF:</span>
-                    <input
-                      type="text"
-                      value={emisorNif}
-                      onChange={(e) => setEmisorNif(e.target.value)}
-                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 text-slate-600">
-                    <span className="text-slate-500 w-16">Dirección:</span>
-                    <input
-                      type="text"
-                      value={emisorDireccion}
-                      onChange={(e) => setEmisorDireccion(e.target.value)}
-                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 text-slate-600">
-                    <span className="text-slate-500 w-16">Teléfono:</span>
-                    <input
-                      type="text"
-                      value={emisorTelefono}
-                      onChange={(e) => setEmisorTelefono(e.target.value)}
-                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 text-slate-600">
-                    <span className="text-slate-500 w-16">Email:</span>
-                    <input
-                      type="text"
-                      value={emisorEmail}
-                      onChange={(e) => setEmisorEmail(e.target.value)}
-                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Cliente */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Cliente (Receptor)</h3>
-                <div className="space-y-1 text-sm">
-                  <input
-                    type="text"
-                    value={clienteNombre}
-                    onChange={(e) => setClienteNombre(e.target.value)}
-                    className="font-bold text-slate-900 bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1"
-                    placeholder="Nombre o Empresa"
-                  />
-                  <div className="flex items-center gap-1 text-slate-600">
-                    <span className="text-slate-500 w-16">CIF/NIF:</span>
-                    <input
-                      type="text"
-                      value={clienteCif}
-                      onChange={(e) => setClienteCif(e.target.value)}
-                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900 font-mono text-xs"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 text-slate-600">
-                    <span className="text-slate-500 w-16">Dirección:</span>
-                    <input
-                      type="text"
-                      value={clienteDireccion}
-                      onChange={(e) => setClienteDireccion(e.target.value)}
-                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 text-slate-600">
-                    <span className="text-slate-500 w-16">Ciudad:</span>
-                    <input
-                      type="text"
-                      value={clienteCiudad}
-                      onChange={(e) => setClienteCiudad(e.target.value)}
-                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 text-slate-600">
-                    <span className="text-slate-500 w-16">Email:</span>
-                    <input
-                      type="text"
-                      value={clienteEmail}
-                      onChange={(e) => setClienteEmail(e.target.value)}
-                      className="bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-900"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {}
-            <div className="overflow-x-auto my-6">
+            {/* Tabla de Conceptos */}
+            <div className="space-y-3">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="border-b-2 border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <tr className="border-b-2 border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     <th className="py-3 px-2">Descripción del Servicio</th>
                     <th className="py-3 px-2 text-center w-20">Cant.</th>
-                    <th className="py-3 px-2 text-right w-32">Precio Base</th>
-                    <th className="py-3 px-2 text-right w-32">Total Base</th>
+                    <th className="py-3 px-2 text-right w-28">Precio Base</th>
+                    <th className="py-3 px-2 text-right w-28">Total</th>
                     <th className="py-3 px-1 text-center w-8 no-print"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tbody className="divide-y divide-slate-100 text-slate-800">
                   {items.map((item) => (
-                    <tr key={item.id} className="group hover:bg-slate-50/50 transition">
+                    <tr key={item.id} className="group hover:bg-slate-50 transition">
                       <td className="py-3 px-2">
                         <input
                           type="text"
                           value={item.title}
                           onChange={(e) => updateItem(item.id, 'title', e.target.value)}
-                          className="font-semibold text-slate-900 bg-transparent w-full outline-none hover:bg-slate-100 rounded px-1"
+                          className="font-bold text-slate-900 bg-transparent w-full outline-none"
                         />
                         <textarea
-                          rows={2}
+                          rows={1}
                           value={item.description}
                           onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                          className="text-xs text-slate-500 bg-transparent w-full outline-none hover:bg-slate-100 rounded px-1 resize-none mt-0.5"
+                          className="text-xs text-slate-500 bg-transparent w-full outline-none resize-none mt-0.5"
                         />
                       </td>
                       <td className="py-3 px-2 text-center align-top">
@@ -633,31 +719,31 @@ export default function App() {
                           min="0"
                           value={item.qty}
                           onChange={(e) => updateItem(item.id, 'qty', parseFloat(e.target.value) || 0)}
-                          className="w-16 text-center bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded px-1 py-1 font-mono focus:ring-1 focus:ring-indigo-500 outline-none"
+                          className="w-16 text-center font-mono bg-slate-50 border border-slate-200 rounded px-1 py-1 outline-none"
                         />
                       </td>
                       <td className="py-3 px-2 text-right align-top">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1 font-mono">
                           <input
                             type="number"
                             step="0.01"
                             min="0"
                             value={item.price}
                             onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)}
-                            className="w-24 text-right bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 rounded px-1.5 py-1 font-mono focus:ring-1 focus:ring-indigo-500 outline-none"
+                            className="w-20 text-right bg-slate-50 border border-slate-200 rounded px-1 py-1 outline-none"
                           />
-                          <span className="text-slate-400 font-mono text-xs">€</span>
+                          <span className="text-xs text-slate-400">€</span>
                         </div>
                       </td>
-                      <td className="py-3 px-2 text-right align-top font-mono font-semibold text-slate-900">
-                        {formatEuro(item.qty * item.price)}
+                      <td className="py-3 px-2 text-right align-top font-mono font-bold text-slate-900">
+                        {formatEuro((Number(item.qty) || 0) * (Number(item.price) || 0))}
                       </td>
                       <td className="py-3 px-1 text-center align-top no-print">
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
-                          title="Eliminar fila"
-                          className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1"
+                          className="text-slate-300 hover:text-red-500 transition font-bold px-1.5 py-0.5 rounded cursor-pointer"
+                          title="Eliminar concepto"
                         >
                           ✕
                         </button>
@@ -667,83 +753,83 @@ export default function App() {
                 </tbody>
               </table>
 
-              <div className="mt-3 no-print">
+              <div className="no-print pt-2">
                 <button
                   type="button"
                   onClick={addItem}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span>+</span> Añadir concepto
+                  <span>+</span>
+                  <span>Añadir concepto / servicio</span>
                 </button>
               </div>
             </div>
 
             {}
-            <div className="flex flex-col md:flex-row justify-between items-start pt-6 border-t border-slate-200 gap-6">
-              <div className="w-full md:w-1/2 space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Instrucciones de Pago</h4>
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1.5 text-slate-600">
-                  <p>
-                    <span className="font-medium text-slate-900">Método de pago:</span> Transferencia bancaria
-                  </p>
-                  <p>
-                    <span className="font-medium text-slate-900">Titular:</span> {emisorNombre}
-                  </p>
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium text-slate-900">IBAN:</span>
+            {/* Totales y Datos Bancarios */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-200">
+              
+              <div className="space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                  Forma de Pago
+                </span>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-xs space-y-1.5 text-slate-700">
+                  <p><strong className="text-slate-900">Método:</strong> Transferencia Bancaria</p>
+                  <p><strong className="text-slate-900">Titular:</strong> {emisorNombre}</p>
+                  <div className="flex items-center gap-2">
+                    <strong className="text-slate-900">IBAN:</strong>
                     <input
                       type="text"
                       value={iban}
                       onChange={(e) => setIban(e.target.value)}
-                      className="font-mono bg-transparent w-full outline-none hover:bg-slate-200/50 rounded px-1 text-slate-800"
+                      className="font-mono text-slate-900 bg-transparent outline-none w-full"
                     />
                   </div>
                   <p>
-                    <span className="font-medium text-slate-900">Concepto de pago:</span>{' '}
-                    <span className="font-medium text-indigo-600">
+                    <strong className="text-slate-900">Concepto:</strong>{' '}
+                    <span className="text-yellow-700 font-mono font-bold">
                       {docType === 'proforma' ? `Proforma ${numDoc}` : `Factura ${numDoc}`}
                     </span>
                   </p>
                 </div>
-                <p className="text-xs text-slate-400 italic">
-                  * Los derechos de uso del material audiovisual quedan cedidos tras el pago íntegro de la presente factura.
+                <p className="text-[11px] text-slate-400 italic leading-relaxed">
+                  * Los derechos de explotación y uso del material quedan cedidos tras el abono íntegro de la factura.
                 </p>
               </div>
 
-              <div className="w-full md:w-5/12 space-y-2">
-                <div className="flex justify-between py-1 text-sm text-slate-600">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between py-1 text-slate-600">
                   <span>Base Imponible:</span>
-                  <span className="font-mono font-medium text-slate-900">{formatEuro(baseImponible)}</span>
+                  <span className="font-mono font-semibold text-slate-900">{formatEuro(baseImponible)}</span>
                 </div>
-                <div className="flex justify-between py-1 text-sm text-slate-600">
+                <div className="flex justify-between py-1 text-slate-600">
                   <span>IVA ({ivaPercent}%):</span>
-                  <span className="font-mono font-medium text-slate-900">+ {formatEuro(cuotaIva)}</span>
+                  <span className="font-mono font-semibold text-slate-900">+ {formatEuro(cuotaIva)}</span>
                 </div>
                 {applyIrpf && (
-                  <div className="flex justify-between py-1 text-sm text-red-600">
+                  <div className="flex justify-between py-1 text-red-600">
                     <span>Retención IRPF (-{irpfPercent}%):</span>
-                    <span className="font-mono font-medium">- {formatEuro(retencionIrpf)}</span>
+                    <span className="font-mono font-semibold">- {formatEuro(retencionIrpf)}</span>
                   </div>
                 )}
-                <div className="flex justify-between py-3 border-t-2 border-slate-800 text-slate-900">
-                  <span className="text-base font-bold">Total a Percibir:</span>
-                  <span className="text-lg font-bold font-mono text-indigo-700">{formatEuro(totalLiquido)}</span>
+                <div className="flex justify-between py-3 border-t-2 border-slate-900 text-slate-900 mt-2">
+                  <span className="text-base font-black">Total a Percibir:</span>
+                  <span className="text-xl font-black font-mono text-slate-950">{formatEuro(totalLiquido)}</span>
                 </div>
               </div>
+
             </div>
 
-            {/* Pie de página */}
-            <footer className="mt-12 pt-6 border-t border-slate-100 text-center text-xs text-slate-400 space-y-1">
-              <p>Gracias por su confianza. Factura emitida de conformidad con la legislación fiscal vigente.</p>
-              {docType === 'proforma' && (
-                <p className="text-[11px] text-amber-700 italic">
-                  * Nota legal: Este documento carece de validez fiscal y registral. La factura ordinaria definitiva será expedida una vez abonado o confirmado el servicio.
-                </p>
-              )}
+            {/* Pie Legal */}
+            <footer className="pt-6 border-t border-slate-100 text-center text-xs text-slate-400">
+              <p>Factura emitida de conformidad con el Real Decreto 1619/2012.</p>
             </footer>
+
           </div>
+
         </div>
       )}
+
     </div>
   );
 }
