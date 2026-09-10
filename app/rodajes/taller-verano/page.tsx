@@ -399,7 +399,7 @@ export default function TallerVeranoPage() {
                     onClick={() => setModalAbierto(false)}
                     className="w-full bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs hover:bg-slate-700 transition cursor-pointer"
                   >
-                    Cancelar
+                    CANCELAR
                   </button>
                   <button 
                     type="submit"
