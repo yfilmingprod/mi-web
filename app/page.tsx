@@ -177,7 +177,17 @@ export default function Home() {
 
         {/* TARJETA GIGANTE 2: AMOR PROCESADO (THRILLER) */}
         <div className="group relative bg-gradient-to-b from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-500 transition-all duration-500 min-h-[520px] flex flex-col justify-between p-8 sm:p-14">
-          <div className="max-w-2xl z-10">
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/amor-procesado/portada.jpg"
+              alt="Carretera entre bosques, portada de Amor Procesado"
+              fill
+              className="object-cover opacity-35 group-hover:scale-105 group-hover:opacity-45 transition-all duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/65 to-black/20" />
+          </div>
+
+          <div className="relative z-10 max-w-2xl">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-xs font-bold uppercase tracking-widest bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30">
                 Drama & Thriller Psicológico
@@ -192,7 +202,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-zinc-400">
+          <div className="relative z-10 mt-10 pt-6 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-zinc-400">
             <div className="flex gap-6">
               <span><strong className="text-white">Rol:</strong> Dirección & Guion</span>
               <span className="hidden sm:inline"><strong className="text-white">Estética:</strong> Cámara en mano / Iluminación Expresiva</span>
