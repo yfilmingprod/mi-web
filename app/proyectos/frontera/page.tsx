@@ -25,7 +25,7 @@ const CHART_DATA = [
 ];
 
 const TECHNICAL_CREW = [
-  { role: 'Dirección', name: 'Paola García Costas' },
+  { role: 'Dirección', name: 'Fernando Fernández' },
   { role: 'Dirección de Fotografía', name: 'Fernando Fernández' },
   { role: 'Director de Producción & Ayte. Dirección', name: 'Yoel Martínez' },
   { role: 'Guion Original', name: 'Ana Piedra' },
