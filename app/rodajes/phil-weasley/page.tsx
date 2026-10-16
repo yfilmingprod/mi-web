@@ -144,6 +144,10 @@ export default async function WorkspacePhilWeasleyPage() {
           </div>
         </section>
 
+        <footer className="border-t border-zinc-900 pt-6 text-center text-xs text-zinc-500">
+          Producido por AP7 Estudios, New Drama y YFILMING
+        </footer>
+
       </div>
     </div>
   )

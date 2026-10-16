@@ -195,7 +195,7 @@ export default function PhilWeasleyPage() {
 
       {/* FOOTER */}
       <footer className="py-20 border-t border-zinc-900 text-center text-zinc-600 text-xs">
-        <p>Phil Weasley · Producido por YFILMING en Tabernas, Almería.</p>
+        <p>Phil Weasley · Producido por AP7 Estudios, New Drama y YFILMING en Tabernas, Almería.</p>
       </footer>
 
     </div>

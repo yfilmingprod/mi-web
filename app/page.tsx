@@ -247,16 +247,26 @@ export default function Home() {
           </Link>
 
           {/* Parpadear / Fototaxia */}
-          <div className="group bg-zinc-950 border border-zinc-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-between min-h-[400px] hover:border-zinc-600 transition-all">
-            <div>
+          <div className="group relative bg-zinc-950 border border-zinc-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-between min-h-[400px] overflow-hidden hover:border-zinc-600 transition-all">
+            <div className="absolute inset-0 bg-red-950">
+              <Image
+                src="/parpadear/potada.jpg"
+                alt="Ojo azul mirando a través de una abertura en una tela roja"
+                fill
+                className="object-cover translate-y-8 opacity-80"
+              />
+              <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-red-950 via-red-950/85 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-b from-red-950/70 via-red-950/25 to-black/95" />
+            </div>
+            <div className="relative z-10">
               <span className="text-xs font-bold uppercase tracking-widest text-zinc-500 block mb-2">Ficción / Fotografía</span>
-              <h3 className="text-3xl sm:text-4xl font-bold text-white mb-3">Parpadear & Fototaxia</h3>
+              <h3 className="text-3xl sm:text-4xl font-bold text-white mb-3">Parpadear</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
                 Proyectos enfocados en la dirección de fotografía, composición del encuadre y dinámicas de iluminación natural y nocturna.
               </p>
             </div>
-            <div className="mt-8 pt-4 border-t border-zinc-900 flex justify-between items-center text-xs text-zinc-400">
-              <span>Cámara & Producción</span>
+            <div className="relative z-10 mt-8 pt-4 border-t border-white/20 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-3 text-xs text-zinc-300">
+              <span>Producido por AP7 Estudios, New Drama y YFILMING</span>
               <span className="text-white font-semibold group-hover:underline">Ver proyectos →</span>
             </div>
           </div>
