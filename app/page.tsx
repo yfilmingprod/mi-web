@@ -205,22 +205,36 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Frontera */}
-          <div className="group bg-zinc-950 border border-zinc-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-between min-h-[400px] hover:border-zinc-600 transition-all">
-            <div>
+          <Link 
+            href="/proyectos/frontera" 
+            className="group relative bg-zinc-950 border border-zinc-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-between min-h-[400px] overflow-hidden hover:border-zinc-600 transition-all duration-300"
+          >
+            {/* Imagen de fondo con opacidad y efecto zoom en hover */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity group-hover:scale-105 group-hover:opacity-40 transition-all duration-500"
+              style={{ backgroundImage: 'url("/frontera/portada.jpg")' }}
+            />
+            {/* Degradado para garantizar lectura limpia de los textos */}
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-transparent" />
+
+            {/* Contenido superior */}
+            <div className="relative z-10">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">Western Minimalista</span>
-                <span className="text-xs font-semibold text-zinc-600">2025</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Western Minimalista</span>
+                <span className="text-xs font-semibold text-zinc-500">2025</span>
               </div>
-              <h3 className="text-3xl sm:text-4xl font-bold text-white mb-3">Frontera</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">
+              <h3 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">Frontera</h3>
+              <p className="text-zinc-300 text-sm leading-relaxed max-w-sm">
                 Western de ambientación cruda. Gestión integral del departamento de producción y asistencia de dirección en un entorno natural exigente.
               </p>
             </div>
-            <div className="mt-8 pt-4 border-t border-zinc-900 flex justify-between items-center text-xs text-zinc-400">
+
+            {/* Pie de tarjeta */}
+            <div className="relative z-10 mt-8 pt-4 border-t border-zinc-800/80 flex justify-between items-center text-xs text-zinc-400">
               <span>Dir. Producción & Ayudante Dir.</span>
-              <span className="text-white font-semibold group-hover:underline">Ver ficha →</span>
+              <span className="text-white font-semibold group-hover:translate-x-1 transition-transform">Ver ficha →</span>
             </div>
-          </div>
+          </Link>
 
           {/* Parpadear / Fototaxia */}
           <div className="group bg-zinc-950 border border-zinc-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-between min-h-[400px] hover:border-zinc-600 transition-all">
