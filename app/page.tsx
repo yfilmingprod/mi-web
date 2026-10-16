@@ -221,7 +221,7 @@ export default function Home() {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Western Minimalista</span>
-                <span className="text-xs font-semibold text-zinc-500">2025</span>
+                <span className="text-xs font-semibold text-zinc-500">En Desarrollo</span>
               </div>
               <h3 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">Frontera</h3>
               <p className="text-zinc-300 text-sm leading-relaxed max-w-sm">

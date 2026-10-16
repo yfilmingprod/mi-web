@@ -297,7 +297,7 @@ export default function FronteraPage() {
 
               <article className="bg-zinc-950 border border-zinc-900 rounded-3xl overflow-hidden flex flex-col justify-between">
                 <ImageCarousel 
-                  images={['/frontera/actriz1.jpg', '/frontera/actriz2.jpg', '/frontera/actriz3.jpg']} 
+                  images={['/frontera/actriz1.jpg', '/frontera/actriz3.jpg', '/frontera/actriz5.jpg']} 
                   altText="Veronica Gregory" 
                 />
                 <div className="p-6">
