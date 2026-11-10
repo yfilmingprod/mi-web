@@ -8,12 +8,12 @@ export default function PhilWeasleyPage() {
     <div className="min-h-screen bg-black text-white font-sans antialiased selection:bg-white selection:text-black">
       
       {/* Botón Volver Flotante */}
-      <div className="fixed top-6 left-6 z-50">
+      <div className="fixed top-20 left-6 z-40">
         <Link 
-          href="/" 
-          className="bg-black/60 backdrop-blur-md border border-zinc-800 text-zinc-300 hover:text-white px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition flex items-center gap-2"
+          href="/#proyectos" 
+          className="bg-black/70 backdrop-blur-md border border-zinc-800 text-zinc-300 hover:text-white px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition flex items-center gap-2 shadow-lg"
         >
-          ← Volver
+          ← Volver a Proyectos
         </Link>
       </div>
 

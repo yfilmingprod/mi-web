@@ -16,6 +16,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const CHART_DATA = [
@@ -51,15 +52,19 @@ function AutoCarousel({ images }: { images: string[] }) {
   return (
     <div className="relative w-full h-full bg-zinc-950">
       {images.map((img, idx) => (
-        <img
+        <div
           key={img}
-          src={img}
-          alt={`Referencia visual ${idx + 1}`}
-          loading="lazy"
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+          className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
             idx === currentIndex ? 'opacity-90 z-10' : 'opacity-0 z-0'
           }`}
-        />
+        >
+          <Image
+            src={img}
+            alt={`Referencia visual ${idx + 1}`}
+            fill
+            className="object-cover"
+          />
+        </div>
       ))}
     </div>
   );
@@ -74,7 +79,7 @@ function TabButton({
 }: { 
   id: string; 
   label: string; 
-  icon: any; 
+  icon: React.ComponentType<{ size?: number }>; 
   activeTab: string; 
   onClick: (id: string) => void;
 }) {
@@ -84,7 +89,7 @@ function TabButton({
       role="tab"
       aria-selected={isActive}
       onClick={() => onClick(id)}
-      className={`flex items-center gap-2 px-5 py-2.5 text-xs font-semibold tracking-wider uppercase transition-all duration-200 border-b-2 ${
+      className={`flex items-center gap-2 px-5 py-2.5 text-xs font-semibold tracking-wider uppercase transition-all duration-200 border-b-2 cursor-pointer ${
         isActive
           ? 'border-white text-white bg-zinc-900/60'
           : 'border-transparent text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/30'
@@ -104,28 +109,31 @@ function ImageCarousel({ images, altText }: { images: string[]; altText: string 
 
   return (
     <div className="relative w-full h-80 flex items-center justify-center bg-zinc-950 border-b border-zinc-800 group overflow-hidden">
-      <img
-        src={images[currentIndex]}
-        alt={`${altText} - Imagen ${currentIndex + 1}`}
-        className="max-w-full max-h-full object-contain transition-opacity duration-300"
-      />
+      <div className="relative w-full h-full">
+        <Image
+          src={images[currentIndex]}
+          alt={`${altText} - Imagen ${currentIndex + 1}`}
+          fill
+          className="object-contain transition-opacity duration-300"
+        />
+      </div>
       {images.length > 1 && (
         <>
           <button
             onClick={prev}
             aria-label="Imagen anterior"
-            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/75 p-2 rounded-full text-zinc-400 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/75 p-2 rounded-full text-zinc-400 hover:text-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-20"
           >
             <ChevronLeft size={18} />
           </button>
           <button
             onClick={next}
             aria-label="Siguiente imagen"
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/75 p-2 rounded-full text-zinc-400 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/75 p-2 rounded-full text-zinc-400 hover:text-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-20"
           >
             <ChevronRight size={18} />
           </button>
-          <div className="absolute bottom-3 flex gap-1.5">
+          <div className="absolute bottom-3 flex gap-1.5 z-20">
             {images.map((_, idx) => (
               <span
                 key={idx}
@@ -148,10 +156,10 @@ export default function FronteraPage() {
     <div className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
       
       {/* BOTÓN VOLVER */}
-      <div className="max-w-5xl mx-auto px-6 pt-6">
+      <div className="max-w-5xl mx-auto px-6 pt-20 pb-2">
         <Link 
-          href="/" 
-          className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 hover:text-white transition-colors"
+          href="/#proyectos" 
+          className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400 hover:text-white transition-colors"
         >
           <ArrowLeft size={14} /> Volver a Proyectos
         </Link>
@@ -173,7 +181,7 @@ export default function FronteraPage() {
             FRONTERA
           </h1>
           <p className="text-zinc-400 italic text-sm md:text-base font-normal max-w-xl mx-auto leading-relaxed">
-            "Una historia mínima sobre dos personas detenidas ante un mismo límite."
+            &ldquo;Una historia mínima sobre dos personas detenidas ante un mismo límite.&rdquo;
           </p>
         </div>
       </header>
@@ -240,7 +248,7 @@ export default function FronteraPage() {
               <blockquote className="max-w-3xl mx-auto p-8 rounded-2xl border border-zinc-900 bg-zinc-950 text-center">
                 <h3 className="text-xs uppercase tracking-widest font-mono text-zinc-500 mb-3">Nota de Intención</h3>
                 <p className="text-zinc-300 italic text-base md:text-lg leading-relaxed mb-4">
-                  "FRONTERA nace de la extrema dificultad de afrontar una decisión drástica cuando esta no solo te define a ti, sino que afecta de manera irreversible a la persona que tienes delante. El conflicto real no es lo que ocurre fuera, sino lo que no se atreven a decirse."
+                  &ldquo;FRONTERA nace de la extrema dificultad de afrontar una decisión drástica cuando esta no solo te define a ti, sino que afecta de manera irreversible a la persona que tienes delante. El conflicto real no es lo que ocurre fuera, sino lo que no se atreven a decirse.&rdquo;
                 </p>
                 <cite className="not-italic text-xs font-mono tracking-widest text-zinc-500 uppercase">
                   — Juan G. Verdú (Creador)

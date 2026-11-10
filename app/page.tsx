@@ -1,81 +1,13 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
 export default function Home() {
-  const [menuAbierto, setMenuAbierto] = useState(false)
-
   return (
     <div className="min-h-screen bg-black text-white font-sans antialiased selection:bg-white selection:text-black">
       
-      {/* HEADER ADAPTATIVO CON MENÚ MÓVIL */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-zinc-900 px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <Image 
-            src="/logo-yfilming.png"
-            alt="YFILMING Logo"
-            width={36}
-            height={36}
-            className="hover:scale-105 transition-transform"
-          />
-          <span className="text-xl font-bold tracking-tight text-white">
-            YFILMING
-          </span>
-        </Link>
-
-        {/* Navegación Desktop */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
-          <Link href="#proyectos" className="hover:text-white transition">Proyectos</Link>
-          <Link href="#sobre-mi" className="hover:text-white transition">Sobre mí</Link>
-          <Link href="/rodajes" className="hover:text-white transition flex items-center gap-2">
-            Rodajes 🎬
-          </Link>
-        </nav>
-
-        {/* Botón Menú Hamburguesa (Solo Móvil) */}
-        <button 
-          onClick={() => setMenuAbierto(!menuAbierto)}
-          className="md:hidden text-zinc-300 hover:text-white p-2 rounded-lg focus:outline-none"
-          aria-label="Toggle menu"
-        >
-          {menuAbierto ? (
-            <span className="text-2xl font-light">✕</span>
-          ) : (
-            <span className="text-2xl font-light">☰</span>
-          )}
-        </button>
-
-        {/* Desplegable Móvil */}
-        {menuAbierto && (
-          <div className="absolute top-full left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-zinc-800 p-6 flex flex-col gap-5 md:hidden text-center text-lg font-medium">
-            <Link 
-              href="#proyectos" 
-              onClick={() => setMenuAbierto(false)} 
-              className="text-zinc-300 hover:text-white py-2"
-            >
-              Proyectos
-            </Link>
-            <Link 
-              href="#sobre-mi" 
-              onClick={() => setMenuAbierto(false)} 
-              className="text-zinc-300 hover:text-white py-2"
-            >
-              Sobre mí
-            </Link>
-            <Link 
-              href="/rodajes" 
-              onClick={() => setMenuAbierto(false)} 
-              className="bg-white text-black font-semibold py-3 rounded-full flex items-center justify-center gap-2"
-            >
-              Acceso a Rodajes 🎬
-            </Link>
-          </div>
-        )}
-      </header>
-
-      {/* 1. HERO PRINCIPAL DE PORTADA CON LOGO INtegrado */}
+      {/* 1. HERO PRINCIPAL DE PORTADA CON LOGO INTEGRADO */}
       <section className="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 overflow-hidden">
         {/* Glow cinematográfico de fondo */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-zinc-800/20 blur-[140px] rounded-full pointer-events-none" />
@@ -176,7 +108,10 @@ export default function Home() {
         </Link>
 
         {/* TARJETA GIGANTE 2: AMOR PROCESADO (THRILLER) */}
-        <div className="group relative bg-gradient-to-b from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-500 transition-all duration-500 min-h-[520px] flex flex-col justify-between p-8 sm:p-14">
+        <Link 
+          href="/rodajes/amor-procesado"
+          className="group relative bg-gradient-to-b from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-500 transition-all duration-500 min-h-[520px] flex flex-col justify-between p-8 sm:p-14 block"
+        >
           <div className="absolute inset-0 z-0">
             <Image
               src="/amor-procesado/portada.jpg"
@@ -207,9 +142,9 @@ export default function Home() {
               <span><strong className="text-white">Rol:</strong> Dirección & Guion</span>
               <span className="hidden sm:inline"><strong className="text-white">Estética:</strong> Cámara en mano / Iluminación Expresiva</span>
             </div>
-            <span className="text-white group-hover:underline">En fase de preproducción →</span>
+            <span className="text-white group-hover:underline">Acceder al workspace →</span>
           </div>
-        </div>
+        </Link>
 
         {/* GRID SECUNDARIO DE DOS COLUMNAS */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

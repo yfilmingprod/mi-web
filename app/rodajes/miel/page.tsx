@@ -3,29 +3,27 @@ import { SignInButton } from '@clerk/nextjs'
 import Link from 'next/link'
 
 // ====================================================================
-// 📝 CONFIGURACIÓN DEL PROYECTO
-// Modifica únicamente este bloque para cada nuevo rodaje
+// 📝 CONFIGURACIÓN DEL PROYECTO: MIEL
 // ====================================================================
 const PROYECTO = {
-  titulo: "NOMBRE DEL PROYECTO",
-  rol: "Tu Rol (ej. Director / Productor)",
-  estado: "Preproducción", // Preproducción | Rodaje | Posproducción | Finalizado
-  genero: "Género / Tipo de Proyecto",
-  localizacion: "Localización principal",
-  fechas: "Fechas estimadas de rodaje",
+  titulo: "Miel",
+  rol: "Camera Man & Ay. Dirección",
+  estado: "Posproducción",
+  genero: "Ficción Dramática",
+  localizacion: "Levante español",
+  fechas: "Rodaje 2026",
   
-  // Enlaces a tus documentos (puedes usar enlaces de Google Drive, Notion, Dropbox o PDFs)
+  // Enlaces a documentos del rodaje
   documentos: {
-    guion: "#",             // ej: "https://drive.google.com/file/d/..."
-    guionTecnico: "#",      // ej: "https://notion.so/..."
-    storyboard: "#",        // ej: "https://mi-drive.com/storyboard"
-    planRodaje: "#",        // ej: "https://docs.google.com/spreadsheets/d/..."
-    ordenesTrabajo: "#",    // ej: "https://drive.google.com/folderview..."
-    inventarioMaterial: "#" // ej: "https://excel.com/..."
+    guion: "#",
+    guionTecnico: "#",
+    storyboard: "#",
+    planRodaje: "#",
+    ordenesTrabajo: "#",
+    inventarioMaterial: "#"
   },
 
-  // Nota de prensa o aviso importante interno para el equipo
-  notaProduccion: "Atención equipo: Revisar la orden de trabajo antes del inicio de jornada."
+  notaProduccion: "Montaje definitivo, etalonaje de color y sincronización de pistas de sonido directo en DaVinci Resolve."
 }
 
 export default async function ProyectoWorkspacePage() {
@@ -52,7 +50,7 @@ export default async function ProyectoWorkspacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 md:p-12">
+    <div className="min-h-screen bg-black text-white p-6 pt-20 md:p-12 md:pt-24">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* NAVEGACIÓN SUPERIOR */}

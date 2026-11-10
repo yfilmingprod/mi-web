@@ -65,7 +65,22 @@ export default function TallerVeranoPage() {
   }
 
   useEffect(() => {
-    cargarRecursos()
+    let cancelado = false
+    const fetchInicial = async () => {
+      const { data, error } = await supabase
+        .from('taller_recursos')
+        .select('*')
+        .eq('proyecto_slug', 'taller-verano')
+        .order('created_at', { ascending: true })
+
+      if (!cancelado && !error && data) {
+        setRecursos(data)
+      }
+    }
+    fetchInicial()
+    return () => {
+      cancelado = true
+    }
   }, [])
 
   // Abrir modal indicando a qué día vamos a añadir contenido
@@ -173,7 +188,7 @@ export default function TallerVeranoPage() {
   const esAdmin = emailUsuario ? ADMIN_EMAILS.includes(emailUsuario) : false
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 md:p-12">
+    <div className="min-h-screen bg-black text-white p-6 pt-20 md:p-12 md:pt-24">
       <div className="max-w-6xl mx-auto space-y-10">
         
         {/* NAVEGACIÓN SUPERIOR */}

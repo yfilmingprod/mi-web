@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 
 interface Rodaje {
   id: string;
@@ -11,6 +13,7 @@ interface Rodaje {
   fecha: string;
   detalles: string;
   enlace: string;
+  enlacePublico?: string;
 }
 
 interface InvoiceItem {
@@ -21,6 +24,34 @@ interface InvoiceItem {
   price: number;
 }
 
+const PRESETS_SERVICIOS = [
+  {
+    title: 'Jornada completa de rodaje en exteriores (Cámara + Operador)',
+    description: 'Cobertura con cámara cinematográfica, set de ópticas fijas y monitorización técnica durante jornada completa.',
+    price: 180.00,
+  },
+  {
+    title: 'Media jornada de rodaje audiovisual',
+    description: 'Cobertura técnica de hasta 4 horas con entrega de brutos respaldados en disco.',
+    price: 100.00,
+  },
+  {
+    title: 'Montaje, etalonaje y diseño sonoro final en DaVinci Resolve',
+    description: 'Postproducción completa de vídeo con corrección de color profesional y hasta 2 rondas de revisiones incluidas.',
+    price: 250.00,
+  },
+  {
+    title: 'Dirección de producción y asistencia de dirección',
+    description: 'Desglose de guion técnico, citaciones de equipo, plan de rodaje y gestión de permisos.',
+    price: 200.00,
+  },
+  {
+    title: 'Sonido directo y microfonía inalámbrica',
+    description: 'Captación de audio profesional de campo con microfonía inalámbrica y pértiga durante el rodaje.',
+    price: 120.00,
+  },
+];
+
 const PROYECTOS_INICIALES: Rodaje[] = [
   {
     id: '1',
@@ -29,7 +60,8 @@ const PROYECTOS_INICIALES: Rodaje[] = [
     estado: 'POSTPRODUCCIÓN',
     fecha: '2026',
     detalles: 'Etalonaje de color, diseño de sonido y masterización final.',
-    enlace: '/rodajes/phil-weasley'
+    enlace: '/rodajes/phil-weasley',
+    enlacePublico: '/proyectos/phil-weasley'
   },
   {
     id: '2',
@@ -64,8 +96,8 @@ const PROYECTOS_INICIALES: Rodaje[] = [
     rol: 'Dir. Producción',
     estado: 'PREPRODUCCIÓN',
     fecha: '2026',
-    detalles: 'Planificación logística, contratos y permisos de localización.',
-    enlace: '#'
+    detalles: 'Dossier de producción, desglose técnico y planificación logística.',
+    enlace: '/proyectos/frontera'
   },
   {
     id: '6',
@@ -73,20 +105,26 @@ const PROYECTOS_INICIALES: Rodaje[] = [
     rol: 'Cámara & Producción',
     estado: 'FINALIZADO',
     fecha: '2026',
-    detalles: 'Copias maestras entregadas y material de archivo preservado.',
+    detalles: 'Copias maestras entregadas y material de archivo preservado en Murcia.',
     enlace: '#'
   }
 ];
 
-export default function RodajesPage() {
-  const [vistaActual, setVistaActual] = useState<'rodajes' | 'facturas'>('rodajes');
+function RodajesContent() {
+  const { user } = useUser();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [tabManual, setTabManual] = useState<'rodajes' | 'facturas' | null>(null);
+  const vistaActual = tabManual ?? (tabParam === 'facturas' ? 'facturas' : 'rodajes');
+  const setVistaActual = (tab: 'rodajes' | 'facturas') => setTabManual(tab);
 
-  // Datos del perfil activo
-  const usuario = {
-    nombre: 'Yoel Martínez Pérez',
-    email: 'yoelmartinezperez@gmail.com',
-    esAdmin: true
-  };
+  // Filtros del tablero de rodajes
+  const [filtroEstado, setFiltroEstado] = useState<string>('TODOS');
+  const [busqueda, setBusqueda] = useState<string>('');
+
+  // Datos dinámicos del usuario activo
+  const nombreUsuario = user?.fullName || user?.firstName || 'Yoel Martínez';
+  const emailUsuario = user?.primaryEmailAddress?.emailAddress || 'yoelmartinezperez@gmail.com';
 
   // Parámetros de la factura o presupuesto
   const [docType, setDocType] = useState<'factura' | 'proforma'>('factura');
@@ -139,6 +177,30 @@ export default function RodajesPage() {
     }
   ]);
 
+  // Contadores dinámicos para los KPI
+  const metricas = useMemo(() => {
+    return {
+      total: PROYECTOS_INICIALES.length,
+      postproduccion: PROYECTOS_INICIALES.filter(p => p.estado.toUpperCase() === 'POSTPRODUCCIÓN').length,
+      preproduccion: PROYECTOS_INICIALES.filter(p => p.estado.toUpperCase() === 'PREPRODUCCIÓN').length,
+      enRodaje: PROYECTOS_INICIALES.filter(p => p.estado.toUpperCase() === 'EN RODAJE').length,
+      finalizados: PROYECTOS_INICIALES.filter(p => p.estado.toUpperCase() === 'FINALIZADO').length,
+    };
+  }, []);
+
+  // Proyectos filtrados en tiempo real
+  const proyectosFiltrados = useMemo(() => {
+    return PROYECTOS_INICIALES.filter(p => {
+      const coincideEstado = filtroEstado === 'TODOS' || p.estado.toUpperCase() === filtroEstado;
+      const q = busqueda.trim().toLowerCase();
+      const coincideBusqueda = !q || 
+        p.titulo.toLowerCase().includes(q) ||
+        p.rol.toLowerCase().includes(q) ||
+        p.detalles.toLowerCase().includes(q);
+      return coincideEstado && coincideBusqueda;
+    });
+  }, [filtroEstado, busqueda]);
+
   const { baseImponible, cuotaIva, retencionIrpf, totalLiquido } = useMemo(() => {
     const base = items.reduce(
       (acc, item) => acc + (Number(item.qty) || 0) * (Number(item.price) || 0),
@@ -190,6 +252,17 @@ export default function RodajesPage() {
     setItems((prev) => [...prev, newItem]);
   };
 
+  const addPresetItem = (preset: typeof PRESETS_SERVICIOS[0]) => {
+    const newItem: InvoiceItem = {
+      id: Date.now().toString(),
+      title: preset.title,
+      description: preset.description,
+      qty: 1,
+      price: preset.price
+    };
+    setItems((prev) => [...prev, newItem]);
+  };
+
   const removeItem = (id: string) => {
     if (items.length > 1) {
       setItems((prev) => prev.filter((item) => item.id !== id));
@@ -197,21 +270,20 @@ export default function RodajesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans antialiased selection:bg-yellow-500/30 selection:text-yellow-400">
+    <div className="min-h-screen bg-black text-white font-sans antialiased pt-14 selection:bg-yellow-500/30 selection:text-yellow-400">
       
-      {}
-      {/* Barra de navegación superior */}
-      <header className="no-print sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-900 px-4 md:px-8 py-3.5">
+      {/* Barra de navegación de Rodajes / Sub-header sticky */}
+      <header className="no-print sticky top-14 z-40 bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-900 px-4 md:px-8 py-3">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400/20 via-yellow-500/10 to-transparent border border-yellow-500/30 flex items-center justify-center font-black text-yellow-500 text-sm shadow-inner">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-yellow-400/20 via-yellow-500/10 to-transparent border border-yellow-500/30 flex items-center justify-center font-black text-yellow-500 text-xs shadow-inner">
               YF
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-yellow-500">
-                  YFILMING WORKSPACE
+                  WORKSPACE
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   Activo
@@ -248,15 +320,14 @@ export default function RodajesPage() {
             </button>
           </nav>
 
-          <div className="hidden sm:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs">
+          <div className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
-            <span className="text-zinc-300 font-mono text-[11px]">{usuario.email}</span>
+            <span className="text-zinc-300 font-mono text-[11px] truncate max-w-[180px]">{emailUsuario}</span>
           </div>
 
         </div>
       </header>
 
-      {}
       {/* VISTA 1: TABLERO DE RODAJES */}
       {vistaActual === 'rodajes' && (
         <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
@@ -267,7 +338,9 @@ export default function RodajesPage() {
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
               <div className="space-y-2">
                 <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-500">PANEL PRIVADO DE CONTROL</span>
-                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white">Hola, Yoel.</h1>
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white">
+                  Hola, {nombreUsuario}.
+                </h1>
                 <p className="text-zinc-400 max-w-2xl text-sm md:text-base">
                   Supervisa el estado de tus producciones activas, accede al desglose de proyectos o genera presupuestos y facturas oficiales listas para descargar.
                 </p>
@@ -285,20 +358,20 @@ export default function RodajesPage() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-8 border-t border-zinc-800/80">
               <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-2xl">
-                <span className="text-zinc-400 text-xs block">Proyectos Activos</span>
-                <span className="text-2xl font-black text-white mt-1 block">5</span>
+                <span className="text-zinc-400 text-xs block">Proyectos Registrados</span>
+                <span className="text-2xl font-black text-white mt-1 block">{metricas.total}</span>
               </div>
               <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-2xl">
                 <span className="text-zinc-400 text-xs block">En Postproducción</span>
-                <span className="text-2xl font-black text-yellow-400 mt-1 block">2</span>
+                <span className="text-2xl font-black text-yellow-400 mt-1 block">{metricas.postproduccion}</span>
               </div>
               <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-2xl">
                 <span className="text-zinc-400 text-xs block">En Preproducción</span>
-                <span className="text-2xl font-black text-sky-400 mt-1 block">2</span>
+                <span className="text-2xl font-black text-sky-400 mt-1 block">{metricas.preproduccion}</span>
               </div>
               <div className="bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-2xl">
-                <span className="text-zinc-400 text-xs block">Finalizados</span>
-                <span className="text-2xl font-black text-emerald-400 mt-1 block">1</span>
+                <span className="text-zinc-400 text-xs block">En Rodaje</span>
+                <span className="text-2xl font-black text-emerald-400 mt-1 block">{metricas.enRodaje}</span>
               </div>
             </div>
           </div>
@@ -351,47 +424,116 @@ export default function RodajesPage() {
             </div>
           </div>
 
-          {/* Grid de Proyectos */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-black text-white">Filmografía & Rodajes Oficiales</h2>
-              <span className="text-xs text-zinc-500">Área Privada YFILMING</span>
+          {/* Grid de Proyectos con Filtros y Búsqueda */}
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-black text-white">Filmografía & Rodajes Oficiales</h2>
+                <span className="text-xs text-zinc-500">Área Privada YFILMING · {proyectosFiltrados.length} encontrados</span>
+              </div>
+
+              {/* Barra de búsqueda interactiva */}
+              <div className="relative w-full md:w-72">
+                <input
+                  type="text"
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  placeholder="Buscar rodaje o rol..."
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500 transition-colors"
+                />
+                {busqueda && (
+                  <button
+                    onClick={() => setBusqueda('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white text-xs"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {PROYECTOS_INICIALES.map((rodaje) => (
-                <div
-                  key={rodaje.id}
-                  className="bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700 rounded-3xl p-6 transition-all space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-                      {rodaje.estado}
-                    </span>
-                    <span className="text-xs font-mono text-zinc-500">{rodaje.fecha}</span>
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">{rodaje.titulo}</h3>
-                    <p className="text-xs font-medium text-yellow-500/90 mt-0.5">Rol: {rodaje.rol}</p>
-                    <p className="text-xs text-zinc-400 mt-2">{rodaje.detalles}</p>
-                  </div>
-                  <div className="pt-4 border-t border-zinc-900 flex justify-between items-center text-xs">
-                    <span className="text-zinc-500">Workspace privado</span>
-                    {rodaje.enlace !== '#' ? (
-                      <Link href={rodaje.enlace} className="text-yellow-400 font-bold hover:underline">
-                        Acceder →
-                      </Link>
-                    ) : (
-                      <span className="text-zinc-600">En archivo</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+            {/* Píldoras de filtro por estado */}
+            <div className="flex flex-wrap items-center gap-2">
+              {['TODOS', 'POSTPRODUCCIÓN', 'PREPRODUCCIÓN', 'EN RODAJE', 'FINALIZADO'].map((estado) => {
+                const activo = filtroEstado === estado;
+                return (
+                  <button
+                    key={estado}
+                    type="button"
+                    onClick={() => setFiltroEstado(estado)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      activo
+                        ? 'bg-yellow-500 text-black shadow-md'
+                        : 'bg-zinc-900/80 text-zinc-400 hover:text-white border border-zinc-800'
+                    }`}
+                  >
+                    {estado === 'TODOS' ? 'Todos los Proyectos' : estado}
+                  </button>
+                );
+              })}
             </div>
+
+            {/* Listado de tarjetas */}
+            {proyectosFiltrados.length === 0 ? (
+              <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-12 text-center text-zinc-500 space-y-2">
+                <p className="text-lg font-bold text-zinc-400">No se encontraron proyectos con ese criterio.</p>
+                <p className="text-xs">Prueba a limpiar la búsqueda o cambiar el filtro de estado.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {proyectosFiltrados.map((rodaje) => (
+                  <div
+                    key={rodaje.id}
+                    className="bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700 rounded-3xl p-6 transition-all flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                          rodaje.estado === 'EN RODAJE'
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                            : rodaje.estado === 'POSTPRODUCCIÓN'
+                            ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                            : rodaje.estado === 'PREPRODUCCIÓN'
+                            ? 'bg-sky-500/10 text-sky-400 border-sky-500/20'
+                            : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                        }`}>
+                          {rodaje.estado}
+                        </span>
+                        <span className="text-xs font-mono text-zinc-500">{rodaje.fecha}</span>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">{rodaje.titulo}</h3>
+                        <p className="text-xs font-medium text-yellow-500/90 mt-0.5">Rol: {rodaje.rol}</p>
+                        <p className="text-xs text-zinc-400 mt-2 leading-relaxed">{rodaje.detalles}</p>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-zinc-900 flex justify-between items-center text-xs">
+                      {rodaje.enlacePublico ? (
+                        <Link href={rodaje.enlacePublico} className="text-zinc-400 hover:text-white transition">
+                          Ver dossier público ↗
+                        </Link>
+                      ) : (
+                        <span className="text-zinc-600">Workspace privado</span>
+                      )}
+                      
+                      {rodaje.enlace !== '#' ? (
+                        <Link href={rodaje.enlace} className="text-yellow-400 font-bold hover:underline">
+                          Acceder →
+                        </Link>
+                      ) : (
+                        <span className="text-zinc-600">En archivo</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </main>
       )}
+
 
       {}
       {/* VISTA 2: GENERADOR DE FACTURAS Y PROFORMAS */}
@@ -753,15 +895,37 @@ export default function RodajesPage() {
                 </tbody>
               </table>
 
-              <div className="no-print pt-2">
+              <div className="no-print pt-3 flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   onClick={addItem}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <span>+</span>
-                  <span>Añadir concepto / servicio</span>
+                  <span>Añadir concepto manual</span>
                 </button>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 font-medium hidden sm:inline">Servicios habituales:</span>
+                  <select
+                    defaultValue=""
+                    onChange={(e) => {
+                      const idx = Number(e.target.value);
+                      if (!isNaN(idx) && PRESETS_SERVICIOS[idx]) {
+                        addPresetItem(PRESETS_SERVICIOS[idx]);
+                        e.target.value = '';
+                      }
+                    }}
+                    className="bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3 py-2 outline-none cursor-pointer hover:bg-slate-200 transition"
+                  >
+                    <option value="" disabled>+ Insertar servicio preconfigurado...</option>
+                    {PRESETS_SERVICIOS.map((p, idx) => (
+                      <option key={idx} value={idx}>
+                        {p.title} ({p.price} €)
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -831,5 +995,20 @@ export default function RodajesPage() {
       )}
 
     </div>
+  );
+}
+
+export default function RodajesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white pt-28 text-center text-sm font-mono flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <div className="w-5 h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+          <span>Cargando Workspace YFILMING...</span>
+        </div>
+      </div>
+    }>
+      <RodajesContent />
+    </Suspense>
   );
 }
