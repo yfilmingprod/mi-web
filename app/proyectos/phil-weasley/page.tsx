@@ -10,7 +10,7 @@ export default function PhilWeasleyPage() {
       {/* Botón Volver Flotante */}
       <div className="fixed top-20 left-6 z-40">
         <Link 
-          href="/#proyectos" 
+          href="/proyectos" 
           className="bg-black/70 backdrop-blur-md border border-zinc-800 text-zinc-300 hover:text-white px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition flex items-center gap-2 shadow-lg"
         >
           ← Volver a Proyectos

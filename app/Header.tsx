@@ -3,18 +3,25 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { SignInButton, UserButton, useUser } from '@clerk/nextjs'
 
 export default function Header() {
   const { isSignedIn, isLoaded, user } = useUser()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
 
   const navLinks = [
     { href: '/', label: 'Inicio' },
-    { href: '/#proyectos', label: 'Proyectos' },
-    { href: '/#sobre-mi', label: 'Sobre mí' },
+    { href: '/proyectos', label: 'Proyectos' },
+    { href: '/sobre-mi', label: 'Sobre mí' },
     { href: '/rodajes', label: 'Rodajes', highlight: true },
   ]
+
+  const isLinkActive = (href: string) => {
+    if (href === '/') return pathname === '/'
+    return pathname.startsWith(href)
+  }
 
   return (
     <header className="w-full bg-black/80 backdrop-blur-xl border-b border-zinc-800/80 fixed top-0 left-0 right-0 z-50">
@@ -40,21 +47,26 @@ export default function Header() {
         </Link>
 
         {/* Menú Desktop Estilo Apple */}
-        <nav className="hidden md:flex items-center gap-7 text-xs font-medium tracking-wide text-zinc-400">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`transition-colors hover:text-white flex items-center gap-1.5 ${
-                link.highlight ? 'text-white font-semibold' : ''
-              }`}
-            >
-              {link.highlight && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              )}
-              {link.label}
-            </Link>
-          ))}
+        <nav className="hidden md:flex items-center gap-7 text-xs font-medium tracking-wide">
+          {navLinks.map((link) => {
+            const active = isLinkActive(link.href)
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`transition-all flex items-center gap-1.5 py-1 px-2 rounded-lg ${
+                  active
+                    ? 'text-white font-semibold bg-zinc-900/60'
+                    : 'text-zinc-400 hover:text-white'
+                } ${link.highlight && !active ? 'text-zinc-200' : ''}`}
+              >
+                {link.highlight && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                )}
+                {link.label}
+              </Link>
+            )
+          })}
         </nav>
 
         {/* Acciones derecha: Auth + Hamburguesa Móvil */}
@@ -106,23 +118,29 @@ export default function Header() {
           <Link
             href="/"
             onClick={() => setMobileMenuOpen(false)}
-            className="text-zinc-300 hover:text-white py-2 border-b border-zinc-900/60"
+            className={`py-2 border-b border-zinc-900/60 ${
+              pathname === '/' ? 'text-white font-bold' : 'text-zinc-300 hover:text-white'
+            }`}
           >
             Inicio
           </Link>
           <Link
-            href="/#proyectos"
+            href="/proyectos"
             onClick={() => setMobileMenuOpen(false)}
-            className="text-zinc-300 hover:text-white py-2 border-b border-zinc-900/60"
+            className={`py-2 border-b border-zinc-900/60 ${
+              pathname.startsWith('/proyectos') ? 'text-white font-bold' : 'text-zinc-300 hover:text-white'
+            }`}
           >
-            Proyectos Seleccionados
+            Proyectos & Filmografía
           </Link>
           <Link
-            href="/#sobre-mi"
+            href="/sobre-mi"
             onClick={() => setMobileMenuOpen(false)}
-            className="text-zinc-300 hover:text-white py-2 border-b border-zinc-900/60"
+            className={`py-2 border-b border-zinc-900/60 ${
+              pathname.startsWith('/sobre-mi') ? 'text-white font-bold' : 'text-zinc-300 hover:text-white'
+            }`}
           >
-            Sobre mí
+            Sobre Yoel Martínez
           </Link>
           <Link
             href="/rodajes"
@@ -140,3 +158,4 @@ export default function Header() {
     </header>
   )
 }
+

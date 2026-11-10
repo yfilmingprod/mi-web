@@ -11,6 +11,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://yfilming.com'),
   title: 'YFILMING | Cinematography & Production',
   description: 'Historias que desafían la gravedad.',
   appleWebApp: {

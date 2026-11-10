@@ -158,7 +158,7 @@ export default function FronteraPage() {
       {/* BOTÓN VOLVER */}
       <div className="max-w-5xl mx-auto px-6 pt-20 pb-2">
         <Link 
-          href="/#proyectos" 
+          href="/proyectos" 
           className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400 hover:text-white transition-colors"
         >
           <ArrowLeft size={14} /> Volver a Proyectos
